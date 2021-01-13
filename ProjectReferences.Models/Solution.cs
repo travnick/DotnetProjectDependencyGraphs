@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace ProjectReferences.Models
 {
-    public class Solution
+    public sealed class Solution
     {
         //internal class SolutionParser
         //Name: Microsoft.Build.Construction.SolutionParser

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace ProjectReferences.Shared
 {
-    public class Logger
+    public sealed class Logger
     {
         private static int _MaxloggingLevel = (int) LogLevel.Low;
         private static LogType _logType = LogType.Console;
@@ -57,7 +57,7 @@ namespace ProjectReferences.Shared
             SetLogLevel(request.LogLevel);
             SetLogType(request.LogType);
 
-            SetOutputFolderLocation(!string.IsNullOrWhiteSpace(request.LogOutputFolderLocation) ? request.LogOutputFolderLocation : request.OutPutFolder);
+            SetOutputFolderLocation(!string.IsNullOrWhiteSpace(request.LogOutputFolderLocation) ? request.LogOutputFolderLocation : request.OutputFolder);
             if (!string.IsNullOrWhiteSpace(request.LogOutputFileLocation))
             {
                 SetOutputFileLocation(request.LogOutputFileLocation);

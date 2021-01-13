@@ -12,14 +12,14 @@ namespace ProjectReferences.Output.Yuml
         {
             Logger.Log("Creating instance of YumlReferenceListOutputProvider", LogLevel.High);
 
-            var translator = new RootNodeToYumlClassDiagramTranslator();
+            var translator = new RootNodeToYumlClassDiagramTranslator(rootNode.ChildProjects);
             var yumlClassOutput = translator.Translate(rootNode, true);
 
             string filePath = Path.Combine(Path.GetFullPath(outputFolder), Path.Combine(outputFolder, rootNode.File.Name + ".yuml"));
 
-            FileHandler.WriteToOutputFile(filePath, yumlClassOutput.ClassDiagram.ToString());
+            FileHandler.WriteToOutputFile(filePath, yumlClassOutput.DependencyDiagram.ToString());
 
-            return new OutputResponse { Success = true, Path = filePath };           
+            return new OutputResponse { Success = true, Path = filePath };
         }
 
     }

@@ -4,12 +4,16 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Windows.Forms;
 using ProjectReferences.Output.Yuml.Models;
 using ProjectReferences.Shared;
+using YumlOutput.Class;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ProjectReferences.Output.Yuml
 {
-    public class YumlHelper
+    public sealed class YumlHelper
     {
         public static string EncodeForHttpPost(string message)
         {
@@ -28,7 +32,8 @@ namespace ProjectReferences.Output.Yuml
             return value;
         }
 
-        public static string YumlClassUrl { get { return @"http://yuml.me/diagram/nofunky;/class/"; } }
+        public static string YumlClassUrl { get { return @"https://yuml.me/diagram/nofunky/class"; } }
+        public static string YumlImageUrl { get { return @"https://yuml.me"; } }
 
         public static string ReplaceSpaces(string url)
         {
@@ -50,32 +55,76 @@ namespace ProjectReferences.Output.Yuml
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
-        public static string GenerateImageOnYumlServer(YumlClassOutput output)
+        public static string GenerateImageOnYumlServer(YumlClassDiagram output)
         {
-            Logger.Log(string.Format("Generating image on yuml server, class diagram: '{0}'", output.ClassDiagram), LogLevel.High);
+            Logger.Log(string.Format("Generating image on yuml server, class diagram: '{0}'", output), LogLevel.High);
 
             ServicePointManager.Expect100Continue = false;
             WebRequest req = WebRequest.Create(YumlClassUrl);
+
             //req.Proxy = new System.Net.WebProxy(ProxyString, true);
             //Add these, as we're doing a POST
             req.ContentType = "application/x-www-form-urlencoded";
             req.Method = "POST";
             //We need to count how many bytes we're sending. Post'ed Faked Forms should be name=value&
-            byte[] bytes = Encoding.ASCII.GetBytes("dsl_text=" + EncodeForHttpPost(output.ClassDiagram.ToString()));
+            var diagramDescriptionRaw = output.ToString();
+            var diagramDescription = "dsl_text=" + EncodeForHttpPost(diagramDescriptionRaw);
+            byte[] bytes = Encoding.ASCII.GetBytes(diagramDescription);
             req.ContentLength = bytes.Length;
-            Stream os = req.GetRequestStream();
-            os.Write(bytes, 0, bytes.Length); //Push it out there
-            os.Close();
-            WebResponse resp = req.GetResponse();
 
-            var sr = new StreamReader(resp.GetResponseStream());
-            string pngName = sr.ReadToEnd().Trim();
+            using (var outputStream = req.GetRequestStream())
+            {
+                outputStream.Write(bytes, 0, bytes.Length); //Push it out there
+                outputStream.Close();
+            }
 
-            var imageOnYumlServer = YumlClassUrl + pngName;
-            Logger.Log(string.Format("image has been generated on server with url of :'{0}'", imageOnYumlServer), LogLevel.High);
-            return imageOnYumlServer;
+            string htmlContent;
+
+            using (var response = req.GetResponse())
+            {
+
+                using (var reader = new StreamReader(response.GetResponseStream()))
+                {
+                    htmlContent = reader.ReadToEnd().Trim();
+                }
+            }
+
+            var imageFetcher = new ImageFetcher(htmlContent);
+
+            Thread thread = new Thread(imageFetcher.FetchImageSrc);
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            //while (thread.IsAlive) System.Windows.Forms.Application.DoEvents();
+
+            return imageFetcher.ImageUrl;
         }
 
+        private sealed class ImageFetcher
+        {
+            public ImageFetcher(string htmlContent)
+            {
+                this.htmlContent = htmlContent;
+            }
+            public void FetchImageSrc()
+            {
+                using (var browser = new WebBrowser())
+                {
+                    var src = htmlContent;
+
+                    using (WebClient client = new WebClient())
+                    {
+                        ImageUrl = YumlImageUrl + "/" + src;
+
+                        Logger.Log(string.Format("image has been generated on server with url of :'{0}'", ImageUrl), LogLevel.High);
+                    }
+                }
+            }
+
+            private readonly string htmlContent;
+            public string ImageUrl { get; private set; }
+        }
 
         public static void DownloadYumlServerImage(string outputFileName, string url)
         {

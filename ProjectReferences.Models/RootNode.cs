@@ -2,11 +2,11 @@
 
 namespace ProjectReferences.Models
 {
-    public class RootNode
+    public sealed class RootNode
     {
         public RootNode()
         {
-            ProjectDetails = new ProjectDetailsCollection();
+            ChildProjects = new ProjectDetailRepository();
         }
 
         public RootNodeType NodeType { get; set; }
@@ -15,7 +15,7 @@ namespace ProjectReferences.Models
         public DirectoryInfo Directory { get; set; }
         public int SearchDepth { get; set; }
 
-        public ProjectDetailsCollection ProjectDetails { get; protected set; }
+        public ProjectDetailRepository ChildProjects { get; private set; }
     }
 
     public enum RootNodeType

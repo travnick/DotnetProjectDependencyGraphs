@@ -3,7 +3,7 @@ using System.IO;
 
 namespace ProjectReferences.Shared
 {
-    public class FileHandler
+    public sealed class FileHandler
     {
         /// <summary>
         /// Will ensure folder exists and no file is there, (will delete one if it exists)

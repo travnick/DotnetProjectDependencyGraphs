@@ -2,7 +2,7 @@
 
 namespace YumlOutput.Class.Models
 {
-    public class YumlInterface : YumlModel
+    public sealed class YumlInterface : YumlModel
     {
         public String Name { get; set; }
 

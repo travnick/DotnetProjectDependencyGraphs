@@ -1,6 +1,6 @@
 ﻿namespace YumlOutput.Class.Models
 {
-    public class YumlClass : YumlModel
+    public sealed class YumlClass : YumlModel
     {
         public string Name { get; set; }
 

@@ -18,7 +18,6 @@ namespace ProjectReferences.Utils
             }
         }
 
-
         public static string RemoveAccent(this string txt)
         {
             if (string.IsNullOrWhiteSpace(txt))
@@ -34,8 +33,8 @@ namespace ProjectReferences.Utils
         {
             string str = phrase.RemoveAccent().ToLower();
             str = System.Text.RegularExpressions.Regex.Replace(str, @"%[0-9]{2}", ""); //remove %28 etc
-            str = System.Text.RegularExpressions.Regex.Replace(str, @"[^a-z0-9\s-]", ""); // Remove all non valid chars       
-            str = System.Text.RegularExpressions.Regex.Replace(str, @"\s+", " ").Trim(); // convert multiple spaces into one space  
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[^a-z0-9\s-]", ""); // Remove all non valid chars
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"\s+", " ").Trim(); // convert multiple spaces into one space
             str = System.Text.RegularExpressions.Regex.Replace(str, @"\s", "-"); // //Replace spaces by dashes
             return str;
         }

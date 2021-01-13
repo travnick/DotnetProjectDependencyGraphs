@@ -1,6 +1,6 @@
 ﻿namespace ProjectReferences.Models
 {
-    public class OutputResponse
+    public sealed class OutputResponse
     {
         public bool Success { get; set; }
         public string Path { get; set; }

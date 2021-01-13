@@ -3,7 +3,7 @@ using ProjectReferences.Shared;
 
 namespace ProjectReferences.Console
 {
-    class ParseCommandLineArgs
+    sealed class ParseCommandLineArgs
     {
         public AnalysisRequest Process(string[] args)
         {
@@ -13,33 +13,28 @@ namespace ProjectReferences.Console
 
         public AnalysisRequest Process(AnalysisRequest request, string[] args)
         {
-            if (args.Length == 0)
-            {
-                return request;
-            }
-
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i].Trim().ToLower())
                 {
-                    case "-leveltodig":
+                    case "--leveltodig":
                         if (args.Length > i + 1)
                         {
                             request.NumberOfLevelsToDig = int.Parse(args[i + 1]);
                         }
                         break;
 
-                    case "-outputfolder":
+                    case "--outputfolder":
                         if (args.Length > i + 1)
                         {
                             if (!string.IsNullOrWhiteSpace(args[i + 1]))
                             {
-                                request.OutPutFolder = args[i + 1];
+                                request.OutputFolder = args[i + 1];
                             }
                         }
                         break;
 
-                    case "-rootfile":
+                    case "--rootfile":
                         if (args.Length > i + 1)
                         {
                             if (!string.IsNullOrWhiteSpace(args[i + 1]))
@@ -49,24 +44,24 @@ namespace ProjectReferences.Console
                         }
                         break;
 
-                    case "-outputeachitem":
+                    case "--outputeachitem":
                         if (args.Length > i + 1)
                         {
                             request.CreateOutputForEachItem = bool.Parse(args[i + 1]);
                         }
                         break;
 
-                    case "-outputtype":
-                        if (args.Length > i + 1) 
+                    case "--outputtype":
+                        if (args.Length > i + 1)
                         {
-                            if (Enum.IsDefined(typeof (OutPutType), args[i +1]))
+                            if (Enum.IsDefined(typeof (OutputType), args[i +1]))
                             {
-                                request.OutPutType = (OutPutType)Enum.Parse(typeof(OutPutType), args[i + 1], true);
+                                request.OutputType = (OutputType)Enum.Parse(typeof(OutputType), args[i + 1], true);
                             }
                         }
                         break;
-                    case "-loglevel":
-                        if (args.Length > i + 1) 
+                    case "--loglevel":
+                        if (args.Length > i + 1)
                         {
                             if (Enum.IsDefined(typeof (LogLevel), args[i +1]))
                             {
@@ -74,7 +69,7 @@ namespace ProjectReferences.Console
                             }
                         }
                         break;
-                    case "-logfolder":
+                    case "--logfolder":
                         if (args.Length > i + 1)
                         {
                             if (!string.IsNullOrWhiteSpace(args[i + 1]))
@@ -83,7 +78,7 @@ namespace ProjectReferences.Console
                             }
                         }
                         break;
-                    case "-logfile":
+                    case "--logfile":
                         if (args.Length > i + 1)
                         {
                             if (!string.IsNullOrWhiteSpace(args[i + 1]))
@@ -92,7 +87,7 @@ namespace ProjectReferences.Console
                             }
                         }
                         break;
-                    case "-logtype":
+                    case "--logtype":
                         if (args.Length > i + 1)
                         {
                             if (Enum.IsDefined(typeof(LogType), args[i + 1]))
@@ -102,7 +97,7 @@ namespace ProjectReferences.Console
                         }
                         break;
 
-                    case "-includeexternal":
+                    case "--includeexternal":
                         if (args.Length > i + 1)
                         {
                             request.IncludeExternalReferences = bool.Parse(args[i + 1]);
@@ -112,9 +107,14 @@ namespace ProjectReferences.Console
             }
 
             //if the output type is OutPutType.HtmlDocument then it needs to produce png's for each item so set the output each item flag to true, regardless of params
-            if (request.OutPutType == OutPutType.HtmlDocument)
+            if (request.OutputType == OutputType.HtmlDocument)
             {
                 request.CreateOutputForEachItem = true;
+            }
+
+            if (string.IsNullOrEmpty(request.RootFile))
+            {
+                throw new ArgumentException("rootfile is required");
             }
 
             return request;

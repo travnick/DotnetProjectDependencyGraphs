@@ -2,11 +2,11 @@
 
 namespace YumlOutput.Class.Relationships
 {
-    public class AggregationRelationship : YumlRelationshipBase
+    public sealed class AggregationRelationship : YumlRelationshipBase
     {
-        public YumlModel Parent { get; set; }
-        public YumlModel Child { get; set; }
-        public int? AggregateCount { get; set; }
+        public YumlModel Parent { get; }
+        public YumlModel Child { get; }
+        public int? AggregateCount { get; }
 
         protected override string GenerateRelationMap()
         {
@@ -18,15 +18,20 @@ namespace YumlOutput.Class.Relationships
             return string.Format("{0}+->{1}", Parent, Child);
         }
 
-        protected override int Compare<T>(T other)
+        protected override int GetHash()
         {
-            if (!(other is AggregationRelationship))
+            return (Parent.ToString() + Child.ToString()).GetHashCode();
+        }
+
+        protected override bool EqualsImpl<T>(T other)
+        {
+            if (other is AggregationRelationship)
             {
-                return -1;
+                var o = other as AggregationRelationship;
+                return o.Parent.Equals(Parent) && o.Child.Equals(Child);
             }
 
-            var o = other as AggregationRelationship;
-            return o.Parent.Equals(Parent) && o.Child.Equals(Child) ? 0 : 1;
+            return false;
         }
     }
 }

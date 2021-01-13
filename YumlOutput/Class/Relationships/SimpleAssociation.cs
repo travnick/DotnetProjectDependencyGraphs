@@ -2,25 +2,36 @@
 
 namespace YumlOutput.Class.Relationships
 {
-    public class SimpleAssociation : YumlRelationshipBase
+    public sealed class SimpleAssociation : YumlRelationshipBase
     {
-        public YumlModel Parent { get; set; }
-        public YumlModel Child { get; set; }
+        public YumlModel Parent { get; }
+        public YumlModel Child { get; }
+
+        public SimpleAssociation(YumlModel parent, YumlModel child)
+        {
+            Parent = parent;
+            Child = child;
+        }
 
         protected override string GenerateRelationMap()
         {
             return string.Format("{0}->{1}", Parent, Child);
         }
 
-        protected override int Compare<T>(T other)
+        protected override int GetHash()
         {
-            if (!(other is SimpleAssociation))
+            return (Parent.ToString() + Child.ToString()).GetHashCode();
+        }
+
+        protected override bool EqualsImpl<T>(T other)
+        {
+            if (other is SimpleAssociation)
             {
-                return -1;
+                var o = other as SimpleAssociation;
+                return o.Parent.Equals(Parent) && o.Child.Equals(Child);
             }
 
-            var o = other as SimpleAssociation;
-            return o.Parent.Equals(Parent) && o.Child.Equals(Child) ? 0 : 1;
+            return false;
         }
     }
 }

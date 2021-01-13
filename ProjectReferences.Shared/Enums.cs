@@ -4,7 +4,7 @@ namespace ProjectReferences.Shared
     /// <summary>
     /// Defines the possible output types
     /// </summary>
-    public enum OutPutType
+    public enum OutputType
     {
         YumlReferenceList = 1,
         YumlUrl = 2,

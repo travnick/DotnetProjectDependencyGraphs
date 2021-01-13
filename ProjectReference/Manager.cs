@@ -23,16 +23,16 @@ namespace ProjectReference
                 throw new FileNotFoundException(request.RootFile);
             }
 
-            var rootFileInfo = new FileInfo(request.RootFile);            
+            var rootFileInfo = new FileInfo(request.RootFile);
 
             var rootNode = new RootNode
-                {
-                    Directory = rootFileInfo.Directory, 
-                    File = rootFileInfo, 
-                    Name = rootFileInfo.Name, 
-                    NodeType = DetermineRootNodeType(rootFileInfo.FullName), 
-                    SearchDepth = request.NumberOfLevelsToDig
-                };
+            {
+                Directory = rootFileInfo.Directory,
+                File = rootFileInfo,
+                Name = rootFileInfo.Name,
+                NodeType = DetermineRootNodeType(rootFileInfo.FullName),
+                SearchDepth = request.NumberOfLevelsToDig
+            };
 
             return rootNode;
         }
@@ -80,40 +80,37 @@ namespace ProjectReference
 
         private static void ProcessCsProjRootNode(RootNode rootNode, bool includeExternalReferences)
         {
-            ProcessLinks(new List<InvestigationLink> { new InvestigationLink { FullPath = rootNode.File.FullName, Parent = null } }, rootNode, includeExternalReferences);
+            ProcessLinks(new HashSet<InvestigationLink> { new InvestigationLink { FullPath = rootNode.File.FullName, Parent = null } }, rootNode, includeExternalReferences);
         }
 
-        private static void ProcessLinks(List<InvestigationLink> linksToBeInvestigated, RootNode rootNode, bool includeExternalReferences)
+        private static void ProcessLinks(ISet<InvestigationLink> linksToBeInvestigated, RootNode rootNode, bool includeExternalReferences)
         {
             while (linksToBeInvestigated.Any())
             {
-                var item = linksToBeInvestigated[0];
-                linksToBeInvestigated.RemoveAt(0);
+                var investigation = linksToBeInvestigated.First();
+                linksToBeInvestigated.Remove(investigation);
 
-                var link = new ProjectLinkObject {FullPath = item.FullPath};
-                var projectDetail = new ProjectFileManager().Create(link, includeExternalReferences);
-                if (item.Parent != null)
+                var projectDetail = ProjectFactory.MakeProjectDetail(investigation.FullPath, includeExternalReferences);
+                if (investigation.Parent != null)
                 {
-                    projectDetail.ParentProjects.Add(item.Parent);
+                    projectDetail.ParentProjects.Add(new ProjectLinkObject(rootNode.ChildProjects.GetById(investigation.Parent.Id)));
                 }
 
-                link.Id = projectDetail.Id;
+                var link = new ProjectLinkObject(projectDetail);
 
-                //get all child links and create link investigations for them
-                linksToBeInvestigated.AddRange(projectDetail.ChildProjects.Select(p => new InvestigationLink { FullPath = p.FullPath, Parent = link }).ToList());
+                linksToBeInvestigated.UnionWith(projectDetail.ChildProjects.Select(p => new InvestigationLink { FullPath = p.FullPath, Parent = link }));
 
-                rootNode.ProjectDetails.Add(projectDetail);                
+                rootNode.ChildProjects.Add(projectDetail);
             }
         }
 
-
-        public static OutputResponse CreateOutPut(AnalysisRequest request, RootNode rootNode)
+        public static OutputResponse CreateOutput(AnalysisRequest request, RootNode rootNode)
         {
             if (request == null) throw new ArgumentNullException("request");
             if (rootNode == null) throw new ArgumentNullException("rootNode");
 
-            IOutputProvider outputProvider = OutputFactory.CreateProvider(request.OutPutType);
-            return outputProvider.Create(rootNode, request.OutPutFolder);
+            IOutputProvider outputProvider = OutputFactory.CreateProvider(request.OutputType);
+            return outputProvider.Create(rootNode, Path.Combine(Directory.GetCurrentDirectory(), request.OutputFolder));
         }
     }
 }

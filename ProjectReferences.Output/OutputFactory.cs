@@ -6,20 +6,20 @@ using ProjectReferences.Shared;
 
 namespace ProjectReferences.Output
 {
-    public class OutputFactory
+    public sealed class OutputFactory
     {
-        public static IOutputProvider CreateProvider(OutPutType outputType)
+        public static IOutputProvider CreateProvider(OutputType outputType)
         {
             Logger.Log(string.Format("Creating IOutputProvider for type: '{0}'", outputType));
             switch (outputType)
             {
-                case OutPutType.YumlReferenceList:
+                case OutputType.YumlReferenceList:
                     return new YumlReferenceListOutputProvider();
-                case OutPutType.YumlUrl:
+                case OutputType.YumlUrl:
                     return new YumlUrlOutputProvider();
-                case OutPutType.YumlImage:
+                case OutputType.YumlImage:
                     return new YumlImageOutputProvider();
-                case OutPutType.HtmlDocument:
+                case OutputType.HtmlDocument:
                     return new SinglePageHtmlDocumentOutputProvider();
                 default:
                     throw new ArgumentOutOfRangeException("outputType");

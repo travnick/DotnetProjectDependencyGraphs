@@ -2,9 +2,16 @@
 
 namespace ProjectReferences.Output.Yuml.Models
 {
-    public class YumlClassOutput
+    public sealed class YumlClassOutput
     {
-        public string RootFile { get; set; }
-        public YumlClassDiagram ClassDiagram { get; set; } 
+        public YumlClassOutput(YumlClassDiagram dependenciesDiagram, YumlClassDiagram parentDiagram, string rootFile)
+        {
+            DependencyDiagram = dependenciesDiagram;
+            ParentDiagram = parentDiagram;
+            RootFile = rootFile;
+        }
+        public string RootFile { get; private set; }
+        public YumlClassDiagram DependencyDiagram { get; private set; }
+        public YumlClassDiagram ParentDiagram { get; private set; }
     }
 }

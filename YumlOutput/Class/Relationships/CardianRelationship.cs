@@ -2,28 +2,33 @@
 
 namespace YumlOutput.Class.Relationships
 {
-    public class CardianRelationship : YumlRelationshipBase
+    public sealed class CardianRelationship : YumlRelationshipBase
     {
-        public YumlModel Parent { get; set; }
-        public string ParentCardianRelationShip { get; set; }
+        public YumlModel Parent { get; }
+        public string ParentCardianRelationShip { get; }
 
-        public YumlModel Child { get; set; }
-        public string ChildCardianRelationShip { get; set; }
+        public YumlModel Child { get; }
+        public string ChildCardianRelationShip { get; }
 
         protected override string GenerateRelationMap()
         {
             return string.Format("{0}{1}-{2}{3}", Parent, ParentCardianRelationShip, ChildCardianRelationShip, Child);
         }
 
-        protected override int Compare<T>(T other)
+        protected override int GetHash()
         {
-            if (!(other is CardianRelationship))
+            return (Parent.ToString() + Child.ToString()).GetHashCode();
+        }
+
+        protected override bool EqualsImpl<T>(T other)
+        {
+            if (other is CardianRelationship)
             {
-                return -1;
+                var o = other as CardianRelationship;
+                return o.Parent.Equals(Parent) && o.Child.Equals(Child);
             }
 
-            var o = other as CardianRelationship;
-            return o.Parent.Equals(Parent) && o.Child.Equals(Child) ? 0 : 1;
+            return false;
         }
     }
 }

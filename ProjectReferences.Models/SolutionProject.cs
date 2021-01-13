@@ -5,7 +5,7 @@ using System.Reflection;
 namespace ProjectReferences.Models
 {
     [DebuggerDisplay("{ProjectName}, {RelativePath}, {ProjectGuid}")]
-    public class SolutionProject
+    public sealed class SolutionProject
     {
         static readonly Type s_ProjectInSolution;
         static readonly PropertyInfo s_ProjectInSolution_ProjectName;

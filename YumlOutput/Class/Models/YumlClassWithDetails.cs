@@ -4,7 +4,7 @@ using System.Text;
 
 namespace YumlOutput.Class.Models
 {
-    public class YumlClassWithDetails : YumlModel
+    public sealed class YumlClassWithDetails : YumlModel
     {
         public YumlClassWithDetails()
         {
@@ -21,7 +21,7 @@ namespace YumlOutput.Class.Models
         {
             var builder = new StringBuilder();
             builder.Append(string.Format("[{0}", Name));
-            
+
             if (Properties.Any())
             {
                 builder.Append("|");
@@ -29,7 +29,7 @@ namespace YumlOutput.Class.Models
                 foreach (var property in Properties)
                 {
                     builder.Append(string.Format("+{0};", property));
-                }    
+                }
             }
 
             if (Methods.Any())

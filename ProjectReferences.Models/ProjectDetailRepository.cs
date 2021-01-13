@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace ProjectReferences.Models
 {
-    public class ProjectDetailsCollection
+    public sealed class ProjectDetailRepository: IEnumerable<ProjectDetail>
     {
-        private readonly IList<ProjectDetail> _projectDetails = new List<ProjectDetail>(); 
+        private readonly IList<ProjectDetail> _projectDetails = new List<ProjectDetail>();
 
         public void Add(ProjectDetail project)
         {
@@ -27,7 +28,12 @@ namespace ProjectReferences.Models
             return _projectDetails.FirstOrDefault(p => p.Id.Equals(id));
         }
 
-        public IEnumerator<ProjectDetail> GetEnumerator()
+        IEnumerator<ProjectDetail> IEnumerable<ProjectDetail>.GetEnumerator()
+        {
+            return _projectDetails.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return _projectDetails.GetEnumerator();
         }

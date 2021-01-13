@@ -7,34 +7,33 @@ using ProjectReferences.Shared;
 
 namespace ProjectReferences.Console
 {
-    class Program
+    sealed class Program
     {
         static void Main(string[] args)
         {
             /*
-             * 
+             *
              * Example of command line args
-             * 
+             *
              * -rootfile "D:\Work\Aerdata\StreamInteractive\Dev-2.6\Shared\Stream2.JobQueuePersistence\Stream2.JobQueuePersistence.csproj" -outputfolder "C:\temp\projectReferences" -outputeachitem true -outputtype YumlReferenceList -loglevel High
-             * 
-             * -rootfile "D:\Work\Aerdata\StreamInteractive\Dev-2.6\Shared\Stream2.JobQueuePersistence\Stream2.JobQueuePersistence.csproj" 
-             * -outputfolder "C:\temp\projectReferences" 
-             * -outputeachitem true 
-             * -outputtype YumlReferenceList 
+             *
+             * -rootfile "D:\Work\Aerdata\StreamInteractive\Dev-2.6\Shared\Stream2.JobQueuePersistence\Stream2.JobQueuePersistence.csproj"
+             * -outputfolder "C:\temp\projectReferences"
+             * -outputeachitem true
+             * -outputtype YumlReferenceList
              * -loglevel High
-             * 
+             *
              */
-
 
             Logger.Log("parsing args");
             AnalysisRequest request = new ParseCommandLineArgs().Process(GetAppSettingValues(), args);
 
-            Logger.SetupLogger(request);            
+            Logger.SetupLogger(request);
 
             //set the current directory to ensure all relative file paths workout correctly.
             string dir = new FileInfo(request.RootFile).Directory.FullName;
-            Logger.Log("setting current / working directory to: " + dir);
-            Directory.SetCurrentDirectory(dir);
+            //Logger.Log("setting current / working directory to: " + dir);
+            //Directory.SetCurrentDirectory(dir);
 
             Logger.Log("Creating project reference collection for root file: " + request.RootFile);
             RootNode rootNode = Manager.CreateRootNode(request);
@@ -43,7 +42,7 @@ namespace ProjectReferences.Console
             Manager.Process(rootNode, request.IncludeExternalReferences);
 
             Logger.Log("Creating output for rootNode", LogLevel.High);
-            var outputResponse = Manager.CreateOutPut(request, rootNode);
+            var outputResponse = Manager.CreateOutput(request, rootNode);
 
             Logger.Log(string.Format("output creation result: {0}", outputResponse.Success));
             Logger.Log(string.Format("output creation path: {0}", outputResponse.Path));

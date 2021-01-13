@@ -4,17 +4,17 @@ using YumlOutput.Class.Relationships;
 
 namespace YumlOutput.Class
 {
-    public class YumlClassDiagram
+    public sealed class YumlClassDiagram
     {
         private readonly bool _newLineForEachRelationship;
 
         public YumlClassDiagram(bool newLineForEachRelationship = false)
         {
-            Relationships = new List<YumlRelationshipBase>();
+            Relationships = new HashSet<YumlRelationshipBase>();
             _newLineForEachRelationship = newLineForEachRelationship;
         }
 
-        public List<YumlRelationshipBase> Relationships { get; protected set;  }
+        public ISet<YumlRelationshipBase> Relationships { get; private set;  }
 
         public override string ToString()
         {
@@ -27,7 +27,7 @@ namespace YumlOutput.Class
                 }
                 else
                 {
-                    builder.Append(relationship);                    
+                    builder.Append(relationship);
                 }
             }
 

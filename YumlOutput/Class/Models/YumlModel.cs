@@ -34,7 +34,5 @@ namespace YumlOutput.Class.Models
         {
             return Compare(other);
         }
-
-
     }
 }
