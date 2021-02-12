@@ -74,7 +74,7 @@ namespace ProjectReference
 
         private static void ProcessSlnRootNode(RootNode rootNode, bool includeExternalReferences)
         {
-            var projectLinks = new SolutionFileManager().FindAllProjectLinks(rootNode);
+            var projectLinks = SolutionFileManager.FindAllProjectLinks(rootNode);
             ProcessLinks(projectLinks, rootNode, includeExternalReferences);
         }
 

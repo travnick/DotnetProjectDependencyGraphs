@@ -5,14 +5,14 @@ using ProjectReferences.Models;
 
 namespace ProjectReference
 {
-    public sealed class SolutionFileManager
+    public static class SolutionFileManager
     {
         /// <summary>
         /// Find projects that are referenced in a solution file and creates a list of references to them.
         /// </summary>
         /// <param name="rootNode"></param>
         /// <returns></returns>
-        public ISet<InvestigationLink> FindAllProjectLinks(RootNode rootNode)
+        public static ISet<InvestigationLink> FindAllProjectLinks(RootNode rootNode)
         {
             var solution = new Solution(rootNode.File.FullName);
 
