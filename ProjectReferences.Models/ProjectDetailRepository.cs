@@ -28,6 +28,11 @@ namespace ProjectReferences.Models
             return _projectDetails.FirstOrDefault(p => p.Id.Equals(id));
         }
 
+        public IList<ProjectDetail> GetByName(string name)
+        {
+            return _projectDetails.Where(p => p.Name.Equals(name)).ToList();
+        }
+
         IEnumerator<ProjectDetail> IEnumerable<ProjectDetail>.GetEnumerator()
         {
             return _projectDetails.GetEnumerator();
