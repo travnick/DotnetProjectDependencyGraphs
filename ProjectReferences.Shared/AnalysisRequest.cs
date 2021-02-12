@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace ProjectReferences.Shared
 {
@@ -7,7 +8,6 @@ namespace ProjectReferences.Shared
         public AnalysisRequest()
         {
             NumberOfLevelsToDig = int.MaxValue;
-            OutputFolder = @"ProjectDependenciesOutput";
             ExcludeNames = new List<string>();
             CreateOutputForEachItem = false;
             OutputType = OutputType.YumlReferenceList;
@@ -16,13 +16,44 @@ namespace ProjectReferences.Shared
             IncludeExternalReferences = false;
         }
 
-        public string RootFile { get; set; }
+        public string RootFile
+        {
+            get
+            {
+                return _rootFile;
+            }
+            set
+            {
+                _rootFile = value;
+
+                if (string.IsNullOrWhiteSpace(_outputFolder))
+                {
+                    _outputFolder = Path.GetFileNameWithoutExtension(value);
+                }
+
+            }
+        }
 
         public int NumberOfLevelsToDig { get; set; }
 
-        public IList<string> ExcludeNames { get; protected set; }
+        public IList<string> ExcludeNames { get; set; }
 
-        public string OutputFolder { get; set; }
+        public string OutputFolder
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_outputFolder))
+                {
+                    return @"ProjectDependenciesOutput";
+                }
+                else
+                {
+                    return _outputFolder;
+                }
+            }
+
+            set => _outputFolder = value;
+        }
 
         public bool CreateOutputForEachItem { get; set; }
 
@@ -37,5 +68,8 @@ namespace ProjectReferences.Shared
         public string LogOutputFolderLocation { get; set; }
 
         public string LogOutputFileLocation { get; set; }
+
+        private string _rootFile;
+        private string _outputFolder;
     }
 }
