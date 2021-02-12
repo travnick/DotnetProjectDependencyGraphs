@@ -1,0 +1,12 @@
+*.sln text eol=crlf
+*.rc binary
+*.cpp text eol=lf
+*.cs text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.sql text eol=lf
+*.vcxproj text eol=crlf
+*.vcproj text eol=crlf
+*.csproj text eol=crlf
+*.config text eol=crlf
+
