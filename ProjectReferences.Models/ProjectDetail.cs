@@ -16,13 +16,13 @@ namespace ProjectReferences.Models
             Other
         }
 
-        public ProjectDetail(string fullFilePath, XmlNamespaceManager nsMgr, XmlDocument projectFile, bool includeExternalReferences)
+        public ProjectDetail(string fullFilePath, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument projectFile, bool includeExternalReferences)
         {
             FullPath = fullFilePath;
             ParentProjects = new HashSet<ProjectLinkObject>();
             Type = GetProjectType(fullFilePath);
 
-            FillUpExtraInformation(fullFilePath, nsMgr, projectFile);
+            FillUpExtraInformation(fullFilePath, projectGuidInSolution, nsMgr, projectFile);
             ChildProjects = GetProjectsDependencies(FullPath, projectFile, nsMgr);
 
             if (includeExternalReferences)
@@ -61,19 +61,42 @@ namespace ProjectReferences.Models
                 }
             }
         }
-        private void FillUpExtraInformation(string fullFilePath, XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        private void FillUpExtraInformation(string fullFilePath, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
         {
             if (Type == ProjectDetail.ProjectType.CSharp)
             {
-                Name = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:AssemblyName", nsMgr).InnerText;
-                DotNetVersion = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:TargetFrameworkVersion", nsMgr).InnerText;
+                var nameNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:AssemblyName", nsMgr);
+                if (null != nameNode)
+                {
+                    Name = nameNode.InnerText;
+                }
+
+                var dotNetVersionNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:TargetFrameworkVersion", nsMgr);
+                if (null != dotNetVersionNode)
+                {
+                    DotNetVersion = dotNetVersionNode.InnerText;
+                }
             }
-            else
+
+            if (string.IsNullOrWhiteSpace(Name))
             {
                 Name = Path.GetFileNameWithoutExtension(fullFilePath);
             }
 
-            Id = Guid.Parse(xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ProjectGuid", nsMgr).InnerText);
+            var guidNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ProjectGuid", nsMgr);
+            if (null != guidNode)
+            {
+                var projectGuid = Guid.Parse(guidNode.InnerText);
+                if (projectGuid != projectGuidInSolution && projectGuidInSolution != new Guid())
+                {
+                    throw new ArgumentException(String.Format("Guid in soludion '{0}' and in project file '{1}' does not match", projectGuidInSolution, projectGuid));
+                }
+                Id = projectGuid;
+            }
+            else
+            {
+                Id = projectGuidInSolution;
+            }
         }
 
         private static ProjectDetail.ProjectType GetProjectType(string fullFilePath)
@@ -89,6 +112,15 @@ namespace ProjectReferences.Models
         }
         private ISet<ProjectLinkObject> GetProjectsDependencies(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
+            var references = GetProjectReferences(projectPath, projectFile, nsMgr);
+
+            references.UnionWith(GetLibrariesReferences(projectPath, projectFile, nsMgr));
+
+            return references;
+        }
+
+        private static ISet<ProjectLinkObject> GetProjectReferences(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
+        {
             DirectoryInfo projectDirectory = new FileInfo(projectPath).Directory;
 
             XmlNodeList projectReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemGroup/msb:ProjectReference", nsMgr);
@@ -102,6 +134,31 @@ namespace ProjectReferences.Models
                 var projectLinkObject = new ProjectLinkObject(subProjectPath, id);
 
                 projectReferenceObjects.Add(projectLinkObject);
+            }
+
+            return projectReferenceObjects;
+        }
+
+        private static ISet<ProjectLinkObject> GetLibrariesReferences(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
+        {
+            XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:AdditionalDependencies", nsMgr);
+            var projectReferenceObjects = new HashSet<ProjectLinkObject>();
+
+            foreach (XmlElement reference in libReferences)
+            {
+                var libraryNames = reference.InnerText.Split(';').ToList();
+                libraryNames.Remove("%(AdditionalDependencies)");
+                libraryNames.Remove("");
+
+                foreach (var libraryName in libraryNames)
+                {
+                    var projectLinkObject = ProjectLinkObject.MakeOutOfSolutionLink(libraryName);
+
+                    if (!projectReferenceObjects.Contains(projectLinkObject))
+                    {
+                        projectReferenceObjects.Add(projectLinkObject);
+                    }
+                }
             }
 
             return projectReferenceObjects;

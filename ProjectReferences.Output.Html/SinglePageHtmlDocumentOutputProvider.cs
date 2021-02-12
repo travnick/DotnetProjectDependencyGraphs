@@ -117,6 +117,8 @@ namespace ProjectReferences.Output.Html
             builder.AppendLine(@"</html>");
 
             var htmlOutputFilePath = Path.Combine(outputFolder, "references.html");
+
+            FileHandler.EnsureFolderExistsForFullyPathedLink(htmlOutputFilePath);
             File.WriteAllText(htmlOutputFilePath, builder.ToString());
 
             return new OutputResponse { Path = htmlOutputFilePath, Success = true };

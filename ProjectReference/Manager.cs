@@ -80,7 +80,7 @@ namespace ProjectReference
 
         private static void ProcessCsProjRootNode(RootNode rootNode, bool includeExternalReferences)
         {
-            ProcessLinks(new HashSet<InvestigationLink> { new InvestigationLink { FullPath = rootNode.File.FullName, Parent = null } }, rootNode, includeExternalReferences);
+            ProcessLinks(new HashSet<InvestigationLink> { new InvestigationLink(null, ProjectLinkObject.MakeOutOfSolutionLink(rootNode.File.FullName)) }, rootNode, includeExternalReferences);
         }
 
         private static void ProcessLinks(ISet<InvestigationLink> linksToBeInvestigated, RootNode rootNode, bool includeExternalReferences)
@@ -90,15 +90,21 @@ namespace ProjectReference
                 var investigation = linksToBeInvestigated.First();
                 linksToBeInvestigated.Remove(investigation);
 
-                var projectDetail = ProjectFactory.MakeProjectDetail(investigation.FullPath, includeExternalReferences);
+                if (!investigation.IsProjectLoadable())
+                {
+                    continue;
+                }
+
+                var projectDetail = ProjectFactory.MakeProjectDetail(investigation.FullPath, investigation.Guid, includeExternalReferences);
                 if (investigation.Parent != null)
                 {
                     projectDetail.ParentProjects.Add(new ProjectLinkObject(rootNode.ChildProjects.GetById(investigation.Parent.Id)));
                 }
 
-                var link = new ProjectLinkObject(projectDetail);
+                var parent = new ProjectLinkObject(projectDetail);
+                var children = projectDetail.ChildProjects.Select(child => new InvestigationLink(parent, child));
 
-                linksToBeInvestigated.UnionWith(projectDetail.ChildProjects.Select(p => new InvestigationLink { FullPath = p.FullPath, Parent = link }));
+                linksToBeInvestigated.UnionWith(children);
 
                 rootNode.ChildProjects.Add(projectDetail);
             }

@@ -21,7 +21,7 @@ namespace ProjectReference
             projectLinks.UnionWith(
                 from project in projects
                 let path = Path.Combine(rootNode.Directory.FullName, project.RelativePath)
-                select new InvestigationLink { Parent = null, FullPath = path }
+                select new InvestigationLink(null, new ProjectLinkObject(path, System.Guid.Parse(project.ProjectGuid)))
             );
 
             return projectLinks;

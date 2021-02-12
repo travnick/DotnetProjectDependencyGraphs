@@ -53,7 +53,11 @@ namespace ProjectReferences.Output.Yuml
 
             foreach (var linkObject in projectDetail.ChildProjects)
             {
-                GenerateDependencyDiagram(ProjectRepository.GetById(linkObject.Id), existingRelationships, newlineForEachRelationship);
+                var project = ProjectRepository.GetById(linkObject.Id);
+                if (null != project)
+                {
+                    GenerateDependencyDiagram(project, existingRelationships, newlineForEachRelationship);
+                }
             }
         }
 
@@ -74,8 +78,9 @@ namespace ProjectReferences.Output.Yuml
 
             foreach (var linkObject in projectDetail.ChildProjects)
             {
-                var childModel = MakeClass(ProjectRepository.GetById(linkObject.Id));
-                relationships.Add(new SimpleAssociation(detailModel, childModel));
+                var childProjectDetail = ProjectRepository.GetById(linkObject.Id);
+
+                relationships.Add(new SimpleAssociation(detailModel, MakeClass(childProjectDetail, linkObject)));
             }
 
             foreach (var dllReference in projectDetail.References)
@@ -85,6 +90,18 @@ namespace ProjectReferences.Output.Yuml
             }
 
             return relationships;
+        }
+
+        private YumlClassWithDetails MakeClass(ProjectDetail childProjectDetail, ProjectLinkObject linkObject)
+        {
+            if (null != childProjectDetail)
+            {
+                return MakeClass(childProjectDetail);
+            }
+            else
+            {
+                return MakeClass(linkObject);
+            }
         }
 
         private void GenerateParentDiagram(ProjectDetail projectDetail, ISet<YumlRelationshipBase> existingRelationships, bool newlineForEachRelationship)
@@ -115,6 +132,14 @@ namespace ProjectReferences.Output.Yuml
             }
 
             return relationships;
+        }
+
+        static private YumlClassWithDetails MakeClass(ProjectLinkObject projectLink)
+        {
+            var detailModel = new YumlClassWithDetails();
+            detailModel.Name = projectLink.FullPath;
+
+            return detailModel;
         }
 
         static private YumlClassWithDetails MakeClass(ProjectDetail projectDetail)
