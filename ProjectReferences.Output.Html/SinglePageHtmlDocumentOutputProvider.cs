@@ -16,7 +16,6 @@ namespace ProjectReferences.Output.Html
             Logger.Log("Creating instance of SinglePageHtmlDocumentOutputProvider", LogLevel.High);
 
             var translator = new RootNodeToYumlClassDiagramTranslator(rootNode.ChildProjects);
-            var yumlClassOutput = translator.Translate(rootNode, true);
 
 
             var builder = new StringBuilder();
@@ -45,6 +44,7 @@ namespace ProjectReferences.Output.Html
             builder.AppendLine(@"</head>");
             builder.AppendLine(@"<body>");
 
+            var yumlClassOutput = translator.Translate(rootNode, true);
             builder.AppendLine(string.Format(@"<h1>All references for: {0}</h1>", yumlClassOutput.RootFile));
 
             var rootNodeOutputFileName = MakeOutputImageFileName(outputFolder, yumlClassOutput.RootFile);
