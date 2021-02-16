@@ -183,17 +183,14 @@ namespace ProjectReferences.Models
                 //if not version stored as XML then try and get the hint path.
                 if (string.IsNullOrWhiteSpace(version))
                 {
-                    var inner = reference.InnerXml;
-                    if (!string.IsNullOrWhiteSpace(inner) && inner.StartsWith("<HintPath"))
-                    {
-                        var innerHintPathXml = new XmlDocument();
-                        innerHintPathXml.LoadXml(inner);
+                    string relativeHintPath = GetHintPath(reference.InnerXml);
 
-                        var relativehintPath = innerHintPathXml.InnerText;
+                    if (!string.IsNullOrWhiteSpace(relativeHintPath))
+                    {
                         var csprojFile = new FileInfo(fullFilePath);
 
-                        var directory = csprojFile.Directory.FullName + (relativehintPath.StartsWith(@"\") ? "" : @"\");
-                        var dllPath = Path.GetFullPath(directory + relativehintPath);
+                        var directory = csprojFile.Directory.FullName + (relativeHintPath.StartsWith(@"\") ? "" : @"\");
+                        var dllPath = Path.GetFullPath(directory + relativeHintPath);
                         var dllFile = new FileInfo(dllPath);
                         if (dllFile.Exists)
                         {
@@ -201,7 +198,6 @@ namespace ProjectReferences.Models
                             Version ver = assembly.GetName().Version;
                             version = ver.ToString();
                         }
-
                     }
                 }
 
@@ -209,6 +205,26 @@ namespace ProjectReferences.Models
             }
 
             return dllReferenceObjects;
+        }
+
+        private static string GetHintPath(string inner)
+        {
+            if (!string.IsNullOrWhiteSpace(inner) && inner.StartsWith("<HintPath"))
+            {
+                var tagEndString = "</HintPath>";
+                var tagEnd = inner.IndexOf(tagEndString);
+                if (tagEnd > 0)
+                {
+                    inner = inner.Substring(0, tagEnd + tagEndString.Length);
+
+                    var innerHintPathXml = new XmlDocument();
+                    innerHintPathXml.LoadXml(inner);
+
+                    return innerHintPathXml.InnerText;
+                }
+            }
+
+            return null;
         }
 
         public bool Equals(ProjectDetail other)
