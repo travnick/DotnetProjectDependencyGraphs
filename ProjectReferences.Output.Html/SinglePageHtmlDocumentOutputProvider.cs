@@ -5,6 +5,7 @@ using System.Text;
 using ProjectReferences.Interfaces;
 using ProjectReferences.Models;
 using ProjectReferences.Output.Yuml;
+using ProjectReferences.Output.Yuml.Models;
 using ProjectReferences.Shared;
 
 namespace ProjectReferences.Output.Html
@@ -15,17 +16,126 @@ namespace ProjectReferences.Output.Html
         {
             Logger.Log("Creating instance of SinglePageHtmlDocumentOutputProvider", LogLevel.High);
 
-            var translator = new RootNodeToYumlClassDiagramTranslator(rootNode.ChildProjects);
-
-
             var builder = new StringBuilder();
 
             builder.AppendLine(@"<html>");
+
+            AppendHtmlHead(builder);
+
+            builder.AppendLine(@"<body>");
+
+            var translator = new RootNodeToYumlClassDiagramTranslator(rootNode.ChildProjects);
+
+            AddOverallRootDependencies(rootNode, outputFolder, builder, translator);
+
+            builder.AppendLine(@"<div id='accordian'>");
+
+            AddReferences(rootNode, outputFolder, builder, translator);
+
+            builder.AppendLine(@"</div>");
+
+            builder.AppendLine(@"</body>");
+            builder.AppendLine(@"</html>");
+
+            var htmlOutputFilePath = Path.Combine(outputFolder, "references.html");
+
+            FileHandler.EnsureFolderExistsForFullyPathedLink(htmlOutputFilePath);
+            File.WriteAllText(htmlOutputFilePath, builder.ToString());
+
+            return new OutputResponse { Path = htmlOutputFilePath, Success = true };
+        }
+
+        private static void AddOverallRootDependencies(RootNode rootNode, string outputFolder, StringBuilder builder, RootNodeToYumlClassDiagramTranslator translator)
+        {
+            var yumlClassOutput = translator.Translate(rootNode, true);
+
+            builder.AppendLine(string.Format(@"<h1>All references for: {0}</h1>", yumlClassOutput.RootFile));
+
+            var rootNodeOutputFileName = MakeOutputImageFileName(outputFolder, yumlClassOutput.RootFile);
+
+            FetchImage(yumlClassOutput.DependencyDiagram, rootNodeOutputFileName);
+
+            builder.AppendLine(String.Format(@"<p>Image for whole reference list: <a href='{0}' target='_blank'> View Yuml Image</a></p>", rootNodeOutputFileName));
+        }
+
+        private static void AddReferences(RootNode rootNode, string outputFolder, StringBuilder builder, RootNodeToYumlClassDiagramTranslator translator)
+        {
+            foreach (var projectDetail in rootNode.ChildProjects.OrderBy(x => Path.GetFileName(x.FullPath)))
+            {
+                Logger.Log(string.Format("generating HTML output for projectDetail: '{0}'", projectDetail.FullPath), LogLevel.High);
+
+                var projectOutput = translator.Translate(projectDetail, true);
+
+                builder.AppendLine(string.Format(@"<h2>{0}</h2>", Path.GetFileName(projectOutput.RootFile)));
+                builder.AppendLine(string.Format(@"<div class='projectReference' id='{0}'>", projectDetail.Id));
+
+                AddReferences(builder, outputFolder, projectDetail, projectOutput);
+
+                AddReferencedBy(builder, outputFolder, projectDetail, projectOutput);
+
+                builder.AppendLine(@"</div>");
+            }
+        }
+
+        private static void AddReferences(StringBuilder builder, string outputFolder, ProjectDetail projectDetail, YumlClassOutput projectOutput)
+        {
+            if (projectOutput.DependencyDiagram.Relationships.Count > 0)
+            {
+                var projectOutputFileName = MakeOutputImageFileName(outputFolder, projectOutput.RootFile);
+                FetchImage(projectOutput.DependencyDiagram, projectOutputFileName);
+                builder.AppendLine(string.Format(@"<h2>{0} - <a href='{1}' target='_blank'>View Yuml Image</a></h2>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
+            }
+
+            if (projectDetail.ChildProjects.Any())
+            {
+                builder.AppendLine(@"<p>This project references:</p>");
+                builder.AppendLine(@"<ul>");
+                foreach (var reference in projectDetail.ChildProjects)
+                {
+                    builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
+                }
+                builder.AppendLine(@"</ul>");
+            }
+            else
+            {
+                builder.AppendLine("<p>This project does not reference any other projects</p>");
+            }
+        }
+
+        private static void AddReferencedBy(StringBuilder builder, string outputFolder, ProjectDetail projectDetail, YumlClassOutput projectOutput)
+        {
+            if (projectDetail.ParentProjects.Any())
+            {
+                builder.AppendLine(@"<p>This project is referenced by:</p>");
+
+                if (projectOutput.ParentDiagram.Relationships.Count > 0)
+                {
+                    var projectOutputFileName = MakeParentOutputImageFileName(outputFolder, projectOutput.RootFile);
+                    FetchImage(projectOutput.ParentDiagram, projectOutputFileName);
+                    builder.AppendLine(string.Format(@"<a href='{1}' target='_blank'>View Yuml Image</a>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
+                }
+
+                builder.AppendLine(@"<ul>");
+
+                foreach (var reference in projectDetail.ParentProjects.OrderBy(x => Path.GetFileName(x.FullPath)))
+                {
+                    builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
+                }
+
+                builder.AppendLine(@"</ul>");
+            }
+            else
+            {
+                builder.AppendLine("<p>This project is not referenced by any other projects</p>");
+            }
+        }
+
+        private static void AppendHtmlHead(StringBuilder builder)
+        {
             builder.AppendLine(@"<head>");
             builder.AppendLine(@"<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js'></script>");
             builder.AppendLine(@"<script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js'></script>");
             builder.AppendLine(@"<link rel='stylesheet' type='text/css' href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/eggplant/jquery-ui.css' />");
-
 
             builder.AppendLine(@"
                 <script>
@@ -42,86 +152,6 @@ namespace ProjectReferences.Output.Html
             );
 
             builder.AppendLine(@"</head>");
-            builder.AppendLine(@"<body>");
-
-            var yumlClassOutput = translator.Translate(rootNode, true);
-            builder.AppendLine(string.Format(@"<h1>All references for: {0}</h1>", yumlClassOutput.RootFile));
-
-            var rootNodeOutputFileName = MakeOutputImageFileName(outputFolder, yumlClassOutput.RootFile);
-            FetchImage(yumlClassOutput.DependencyDiagram, rootNodeOutputFileName);
-
-            builder.AppendLine(String.Format(@"<p>Image for whole reference list: <a href='{0}' target='_blank'> View Yuml Image</a></p>", rootNodeOutputFileName));
-            builder.AppendLine(@"<div id='accordian'>");
-
-            //then for each project details item in the collection need to generate an image and list of links that it references and what references it
-
-            foreach (var projectDetail in rootNode.ChildProjects.OrderBy(x => Path.GetFileName(x.FullPath)))
-            {
-                Logger.Log(string.Format("generating HTML output for projectDetail: '{0}'", projectDetail.FullPath), LogLevel.High);
-
-                var projectOutput = translator.Translate(projectDetail, true);
-
-                builder.AppendLine(string.Format(@"<h2>{0}</h2>", Path.GetFileName(projectOutput.RootFile)));
-                builder.AppendLine(string.Format(@"<div class='projectReference' id='{0}'>", projectDetail.Id));
-
-                if (!string.IsNullOrWhiteSpace(projectOutput.DependencyDiagram.ToString()))
-                {
-                    var projectOutputFileName = MakeOutputImageFileName(outputFolder, projectOutput.RootFile);
-                    FetchImage(projectOutput.DependencyDiagram, projectOutputFileName);
-                    builder.AppendLine(string.Format(@"<h2>{0} - <a href='{1}' target='_blank'>View Yuml Image</a></h2>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
-                }
-
-                if (projectDetail.ChildProjects.Any())
-                {
-                    builder.AppendLine(@"<p>This project references:</p>");
-                    builder.AppendLine(@"<ul>");
-                    foreach (var reference in projectDetail.ChildProjects)
-                    {
-                        builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
-                    }
-                    builder.AppendLine(@"</ul>");
-                }
-                else
-                {
-                    builder.AppendLine("<p>This project does not reference any other projects</p>");
-                }
-
-                if (projectDetail.ParentProjects.Any())
-                {
-
-                    builder.AppendLine(@"<p>This project is referenced by:</p>");
-                    if (!string.IsNullOrWhiteSpace(projectOutput.ParentDiagram.ToString()))
-                    {
-                        var projectOutputFileName = MakeParentOutputImageFileName(outputFolder, projectOutput.RootFile);
-                        FetchImage(projectOutput.ParentDiagram, projectOutputFileName);
-                        builder.AppendLine(string.Format(@"<a href='{1}' target='_blank'>View Yuml Image</a>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
-                    }
-                    builder.AppendLine(@"<ul>");
-                    foreach (var reference in projectDetail.ParentProjects.OrderBy(x => Path.GetFileName(x.FullPath)))
-                    {
-                        builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
-                    }
-                    builder.AppendLine(@"</ul>");
-                }
-                else
-                {
-                    builder.AppendLine("<p>This project is not referenced by any other projects</p>");
-                }
-
-                builder.AppendLine(@"</div>");
-            }
-
-            builder.AppendLine(@"</div>");
-
-            builder.AppendLine(@"</body>");
-            builder.AppendLine(@"</html>");
-
-            var htmlOutputFilePath = Path.Combine(outputFolder, "references.html");
-
-            FileHandler.EnsureFolderExistsForFullyPathedLink(htmlOutputFilePath);
-            File.WriteAllText(htmlOutputFilePath, builder.ToString());
-
-            return new OutputResponse { Path = htmlOutputFilePath, Success = true };
         }
 
         private static void FetchImage(YumlOutput.Class.YumlClassDiagram projectOutput, string projectOutputFileName)
@@ -132,11 +162,11 @@ namespace ProjectReferences.Output.Html
             }
         }
 
-        private string MakeOutputImageFileName(string outputFolder, string rootFile)
+        private static string MakeOutputImageFileName(string outputFolder, string rootFile)
         {
             return Path.Combine(outputFolder, Path.GetFileName(rootFile)) + ".svg";
         }
-        private string MakeParentOutputImageFileName(string outputFolder, string rootFile)
+        private static string MakeParentOutputImageFileName(string outputFolder, string rootFile)
         {
             return Path.Combine(outputFolder, Path.GetFileName(rootFile)) + "_parents.svg";
         }

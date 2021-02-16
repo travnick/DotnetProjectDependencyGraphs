@@ -82,7 +82,6 @@ namespace ProjectReferences.Output.Yuml
 
             using (var response = req.GetResponse())
             {
-
                 using (var reader = new StreamReader(response.GetResponseStream()))
                 {
                     htmlContent = reader.ReadToEnd().Trim();
@@ -95,8 +94,6 @@ namespace ProjectReferences.Output.Yuml
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             thread.Join();
-
-            //while (thread.IsAlive) System.Windows.Forms.Application.DoEvents();
 
             return imageFetcher.ImageUrl;
         }

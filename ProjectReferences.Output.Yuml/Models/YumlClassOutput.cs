@@ -10,8 +10,11 @@ namespace ProjectReferences.Output.Yuml.Models
             ParentDiagram = parentDiagram;
             RootFile = rootFile;
         }
+
         public string RootFile { get; private set; }
+
         public YumlClassDiagram DependencyDiagram { get; private set; }
+
         public YumlClassDiagram ParentDiagram { get; private set; }
     }
 }

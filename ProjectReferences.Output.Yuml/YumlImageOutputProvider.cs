@@ -11,17 +11,28 @@ namespace ProjectReferences.Output.Yuml
         {
             Logger.Log("Creating instance of YumlImageOutputProvider", LogLevel.High);
 
+            string serverImagePath = GenerateImageOnServer(rootNode);
+
+            string outputFileName = DownloadImage(rootNode, outputFolder, serverImagePath);
+
+            return new OutputResponse { Success = true, Path = outputFileName };
+        }
+
+        private static string GenerateImageOnServer(RootNode rootNode)
+        {
             var translator = new RootNodeToYumlClassDiagramTranslator(rootNode.ChildProjects);
             var yumlClassOutput = translator.Translate(rootNode, true);
 
             var serverImagePath = YumlHelper.GenerateImageOnYumlServer(yumlClassOutput.DependencyDiagram);
+            return serverImagePath;
+        }
 
-            //have generated the image on the yuml server, now download the file.
+        private static string DownloadImage(RootNode rootNode, string outputFolder, string serverImagePath)
+        {
             string basePath = Path.GetFullPath(outputFolder);
             var outputFileName = Path.Combine(basePath, rootNode.File.Name + ".svg");
             YumlHelper.DownloadYumlServerImage(outputFileName, serverImagePath);
-
-            return new OutputResponse { Success = true, Path = outputFileName };
+            return outputFileName;
         }
     }
 }
