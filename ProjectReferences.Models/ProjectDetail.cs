@@ -27,7 +27,7 @@ namespace ProjectReferences.Models
 
             if (includeExternalReferences)
             {
-                References = GetExternalReferences(fullFilePath, includeExternalReferences, projectFile, nsMgr);
+                References = GetExternalReferences(fullFilePath, projectFile, nsMgr);
             }
             else
             {
@@ -164,7 +164,7 @@ namespace ProjectReferences.Models
             return projectReferenceObjects;
         }
 
-        private static ISet<DllReference> GetExternalReferences(string fullFilePath, bool includeExternalReferences, XmlDocument projectFile, XmlNamespaceManager nsMgr)
+        private static ISet<DllReference> GetExternalReferences(string fullFilePath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
             //get all dll references
             IEnumerable dllReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemGroup/msb:Reference[not(starts-with(@Include,'System')) and not(starts-with(@Include,'Microsoft.'))]", nsMgr);
