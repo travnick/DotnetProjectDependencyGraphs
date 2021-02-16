@@ -1,15 +1,15 @@
 Project Dependency Graph
 ========================
 
-tool to display project dependencies with a CS Project file or solution.
+tool to display project dependencies with a C# or C/C++ Project file or solution.
 
 
 What it does
 ------------
 
-The application is designed to show what references a project or solution has, i.e. what are the other projects and certain project or solution file references.  It doesn't include external DLL files, only CS projects.
+The application is designed to show what references a project or solution has, i.e. what are the other projects and certain project or solution file references.
 
-The application has a number of outputs available.  Currently they all work around YUML, (http://www.yuml.me).
+The application has a number of outputs available. Currently they all work around YUML, (http://www.yuml.me).
 
 
 How to use the application
@@ -39,4 +39,3 @@ Some properties can be set via the configuration file:
 - OutputFile
 - LoggerType
 - LoggerLevel
-
