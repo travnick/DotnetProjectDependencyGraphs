@@ -8,13 +8,32 @@ using System.Xml;
 
 namespace ProjectReferences.Models
 {
-    public sealed class ProjectDetail: IEquatable<ProjectDetail>
+    public sealed class ProjectDetail : IEquatable<ProjectDetail>
     {
         public enum ProjectType
         {
             CSharp,
+            Cpp,
             Other
         }
+
+        public Guid Id { get; private set; }
+
+        public string FullPath { get; private set; }
+
+        public ProjectType Type { get; private set; }
+
+        public string DotNetVersion { get; private set; }
+
+        public CppProjectDetails CppDetails { get; private set; }
+
+        public string Name { get; private set; }
+
+        public ISet<ProjectLinkObject> ChildProjects { get; private set; }
+
+        public ISet<ProjectLinkObject> ParentProjects { get; private set; }
+
+        public ISet<DllReference> References { get; private set; }
 
         public ProjectDetail(string fullFilePath, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument projectFile, bool includeExternalReferences)
         {
@@ -22,7 +41,13 @@ namespace ProjectReferences.Models
             ParentProjects = new HashSet<ProjectLinkObject>();
             Type = GetProjectType(fullFilePath);
 
-            FillUpExtraInformation(fullFilePath, projectGuidInSolution, nsMgr, projectFile);
+            FillUpExtraInformation(Type, projectGuidInSolution, nsMgr, projectFile);
+
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                Name = Path.GetFileNameWithoutExtension(fullFilePath);
+            }
+
             ChildProjects = GetProjectsDependencies(FullPath, projectFile, nsMgr);
 
             if (includeExternalReferences)
@@ -35,22 +60,6 @@ namespace ProjectReferences.Models
             }
         }
 
-        public Guid Id { get; private set; }
-
-        public string FullPath { get; private set; }
-
-        public string DotNetVersion { get; private set; }
-
-        public string Name { get; private set; }
-
-        public ProjectType Type { get; private set; }
-
-        public ISet<ProjectLinkObject> ChildProjects { get; private set; }
-
-        public ISet<ProjectLinkObject> ParentProjects { get; private set; }
-
-        public ISet<DllReference> References { get; private set; }
-
         public void AddParentLinks(ISet<ProjectLinkObject> parentLinks)
         {
             foreach (var link in parentLinks)
@@ -61,26 +70,16 @@ namespace ProjectReferences.Models
                 }
             }
         }
-        private void FillUpExtraInformation(string fullFilePath, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+
+        private void FillUpExtraInformation(ProjectType projectType, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
         {
-            if (Type == ProjectDetail.ProjectType.CSharp)
+            if (projectType == ProjectType.CSharp)
             {
-                var nameNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:AssemblyName", nsMgr);
-                if (null != nameNode)
-                {
-                    Name = nameNode.InnerText;
-                }
-
-                var dotNetVersionNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:TargetFrameworkVersion", nsMgr);
-                if (null != dotNetVersionNode)
-                {
-                    DotNetVersion = dotNetVersionNode.InnerText;
-                }
+                FetchCSharpExtraInfo(nsMgr, xmlDoc);
             }
-
-            if (string.IsNullOrWhiteSpace(Name))
+            else if (projectType == ProjectType.Cpp)
             {
-                Name = Path.GetFileNameWithoutExtension(fullFilePath);
+                FetchCppExtraInfo(nsMgr, xmlDoc);
             }
 
             var guidNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ProjectGuid", nsMgr);
@@ -99,17 +98,123 @@ namespace ProjectReferences.Models
             }
         }
 
+        private void FetchCppExtraInfo(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                Name = GetCppProjectName(nsMgr, xmlDoc);
+            }
+
+            var details = new CppProjectDetails
+            {
+                Type = GetCppProjectType(nsMgr, xmlDoc),
+                StandardVersion = GetCppStandardVersion(nsMgr, xmlDoc),
+                IsMfc = IsMfcProject(nsMgr, xmlDoc),
+                IsManaged = IsManaged(nsMgr, xmlDoc),
+            };
+
+
+            CppDetails = details;
+        }
+
+        private string GetCppProjectType(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            var configurationType = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ConfigurationType", nsMgr);
+            if (null != configurationType)
+            {
+                return configurationType.InnerText;
+            }
+
+            return "!! Unknown !!";
+        }
+
+        private static bool IsManaged(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            var keywordNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:Keyword", nsMgr);
+            if (null != keywordNode)
+            {
+                return keywordNode.InnerText == "ManagedCProj";
+            }
+
+            return false;
+        }
+
+        private static bool IsMfcProject(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            var useOfMfcNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:UseOfMfc", nsMgr);
+            if (null != useOfMfcNode)
+            {
+                return useOfMfcNode.InnerText == "Dynamic" || useOfMfcNode.InnerText == "Static";
+            }
+
+            return false;
+        }
+
+        private static string GetCppStandardVersion(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            var languageStandardNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:ItemDefinitionGroup/msb:ClCompile/msb:LanguageStandard", nsMgr);
+            if (null != languageStandardNode)
+            {
+                return languageStandardNode.InnerText;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        private static string GetCppProjectName(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            var projectNameNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ProjectName", nsMgr);
+            if (null != projectNameNode)
+            {
+                return projectNameNode.InnerText;
+            }
+            else
+            {
+                var rootNamespaceNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ProjectName", nsMgr);
+                if (null != rootNamespaceNode)
+                {
+                    return rootNamespaceNode.InnerText;
+                }
+                else
+                {
+                    return "";
+                }
+            }
+        }
+
+        private void FetchCSharpExtraInfo(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
+            var nameNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:AssemblyName", nsMgr);
+            if (null != nameNode)
+            {
+                Name = nameNode.InnerText;
+            }
+
+            var dotNetVersionNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:TargetFrameworkVersion", nsMgr);
+            if (null != dotNetVersionNode)
+            {
+                DotNetVersion = dotNetVersionNode.InnerText;
+            }
+        }
+
         private static ProjectDetail.ProjectType GetProjectType(string fullFilePath)
         {
             if (fullFilePath.EndsWith(".csproj"))
             {
                 return ProjectDetail.ProjectType.CSharp;
             }
+            else if (fullFilePath.EndsWith(".vcxproj"))
+            {
+                return ProjectDetail.ProjectType.Cpp;
+            }
             else
             {
                 return ProjectDetail.ProjectType.Other;
             }
         }
+
         private ISet<ProjectLinkObject> GetProjectsDependencies(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
             var references = GetProjectReferences(projectPath, projectFile, nsMgr);

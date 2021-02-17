@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CppProjectDetails.cs" />
     <Compile Include="DllReference.cs" />
     <Compile Include="InvestigationLink.cs" />
     <Compile Include="OutputResponse.cs" />

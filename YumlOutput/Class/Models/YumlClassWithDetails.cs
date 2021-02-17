@@ -6,17 +6,23 @@ namespace YumlOutput.Class.Models
 {
     public sealed class YumlClassWithDetails : YumlModel
     {
-        public YumlClassWithDetails()
+        public YumlClassWithDetails(string name)
         {
             Properties = new List<string>();
             Methods = new List<string>();
             Notes = new List<string>();
+
+            Name = name;
         }
 
-        public string Name { get; set; }
-        public List<string> Properties { get; protected set; }
-        public List<string> Methods { get; protected set; }
-        public List<string> Notes { get; protected set; }
+        public string Name { get; private set; }
+
+        public IList<string> Properties { get; private set; }
+
+        public IList<string> Methods { get; private set; }
+
+        public IList<string> Notes { get; private set; }
+
         protected override string Draw()
         {
             var builder = new StringBuilder();

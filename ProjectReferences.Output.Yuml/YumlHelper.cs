@@ -19,7 +19,8 @@ namespace ProjectReferences.Output.Yuml
         {
             var value = message.Trim();
 
-            value = Regex.Replace(value, @"^\s+$[\r\n]*", "", RegexOptions.Multiline);
+            value = Regex.Replace(value, @"^\s$[\r\n]*", "", RegexOptions.Multiline);
+            value = value.Replace("+", "%2B");
             value = value.Replace("[", "%5B");
             value = value.Replace("]", "%5D");
             value = value.Replace(">", "%3E");

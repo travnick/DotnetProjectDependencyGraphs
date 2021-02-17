@@ -6,6 +6,7 @@ using ProjectReferences.Shared;
 using YumlOutput.Class;
 using YumlOutput.Class.Models;
 using YumlOutput.Class.Relationships;
+using static ProjectReferences.Models.ProjectDetail;
 
 namespace ProjectReferences.Output.Yuml
 {
@@ -136,29 +137,49 @@ namespace ProjectReferences.Output.Yuml
 
         static private YumlClassWithDetails MakeClass(ProjectLinkObject projectLink)
         {
-            var detailModel = new YumlClassWithDetails();
-            detailModel.Name = projectLink.FullPath;
-
-            return detailModel;
+            return new YumlClassWithDetails(projectLink.FullPath);
         }
 
         static private YumlClassWithDetails MakeClass(ProjectDetail projectDetail)
         {
-            var detailModel = new YumlClassWithDetails();
-            detailModel.Name = projectDetail.Name;
+            var detailModel = new YumlClassWithDetails(projectDetail.Name);
 
-            if (!string.IsNullOrEmpty(projectDetail.DotNetVersion))
-            {
-                detailModel.Notes.Add(".Net Version: " + projectDetail.DotNetVersion);
-            }
+            AddDotNetNotes(projectDetail, detailModel);
+            AddCppNotes(projectDetail.CppDetails, detailModel);
 
             return detailModel;
         }
 
+        private static void AddDotNetNotes(ProjectDetail projectDetail, YumlClassWithDetails detailModel)
+        {
+            if (!string.IsNullOrEmpty(projectDetail.DotNetVersion))
+            {
+                detailModel.Notes.Add(".Net Version: " + projectDetail.DotNetVersion);
+            }
+            else if (projectDetail.Type == ProjectType.CSharp)
+            {
+                detailModel.Notes.Add("C#");
+            }
+        }
+
+        private static void AddCppNotes(CppProjectDetails details, YumlClassWithDetails detailModel)
+        {
+            if (null != details)
+            {
+                detailModel.Notes.Add("Type: " + details.Type);
+                if (!string.IsNullOrWhiteSpace(details.StandardVersion))
+                {
+                    detailModel.Notes.Add("C++ version: " + details.StandardVersion);
+                }
+                detailModel.Notes.Add("Is MFC: " + details.IsMfc);
+                detailModel.Notes.Add("Is C++/CLI: " + details.IsManaged);
+            }
+        }
+
         static private YumlClassWithDetails MakeClass(DllReference dllReference)
         {
-            var detailModel = new YumlClassWithDetails();
-            detailModel.Name = dllReference.AssemblyName;// string.Format("{0}.dll", dllReference.AssemblyName);
+            var detailModel = new YumlClassWithDetails(dllReference.AssemblyName);
+
             detailModel.Notes.Add(
                 string.Format("External Reference{0}",
                 string.IsNullOrWhiteSpace(dllReference.Version) ? "" : string.Format(" ({0})", dllReference.Version)
