@@ -2,11 +2,18 @@
 {
     public sealed class YumlClass : YumlModel
     {
-        public string Name { get; set; }
-
-        protected override string Draw()
+        YumlClass(string name) : base(name)
         {
-            return string.Format("[{0}]", Name);
+        }
+
+        protected override string DrawForDeclaration()
+        {
+            return string.Format("[{0}]", GetName());
+        }
+
+        protected override string DrawForRelationship()
+        {
+            return DrawForDeclaration();
         }
 
         protected override int Compare<T>(T other)
@@ -17,7 +24,7 @@
             }
 
             var o = other as YumlClass;
-            return Name == o.Name && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            return GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
         }
     }
 }

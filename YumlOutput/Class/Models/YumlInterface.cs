@@ -4,11 +4,18 @@ namespace YumlOutput.Class.Models
 {
     public sealed class YumlInterface : YumlModel
     {
-        public String Name { get; set; }
-
-        protected override string Draw()
+        YumlInterface(string name):base(name)
         {
-            return string.Format("<<{0}>>", Name);
+        }
+
+        protected override string DrawForDeclaration()
+        {
+            return string.Format("<<{0}>>", GetName());
+        }
+
+        protected override string DrawForRelationship()
+        {
+            return DrawForDeclaration();
         }
 
         protected override int Compare<T>(T other)
@@ -19,7 +26,7 @@ namespace YumlOutput.Class.Models
             }
 
             var o = other as YumlInterface;
-            return this.Name == o.Name && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            return this.GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
         }
     }
 }

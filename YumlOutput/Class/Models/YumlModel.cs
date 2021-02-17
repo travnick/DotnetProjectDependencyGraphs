@@ -4,18 +4,28 @@ namespace YumlOutput.Class.Models
 {
     public abstract class YumlModel : IComparable<YumlModel>
     {
-        protected YumlModel()
+        protected YumlModel(string name)
         {
             BackGroundColour = string.Empty;
+            _name = name;
         }
 
-        protected abstract string Draw();
+        protected abstract string DrawForDeclaration();
+
+        protected abstract string DrawForRelationship();
+
         protected abstract int Compare<T>(T other) where T : YumlModel;
+
         public string BackGroundColour { get; set; }
 
-        public override string ToString()
+        public string GetName()
         {
-            string draw = Draw();
+            return _name;
+        }
+
+        public string ToDeclarationString()
+        {
+            string draw = DrawForDeclaration();
 
             if (!string.IsNullOrWhiteSpace(BackGroundColour) && !draw.Contains("{bg:"))
             {
@@ -23,6 +33,16 @@ namespace YumlOutput.Class.Models
             }
 
             return draw;
+        }
+
+        public string ToRelationshipString()
+        {
+            return DrawForRelationship();
+        }
+
+        public override string ToString()
+        {
+            return ToRelationshipString();
         }
 
         public override bool Equals(object obj)
@@ -34,5 +54,7 @@ namespace YumlOutput.Class.Models
         {
             return Compare(other);
         }
+
+        private readonly string _name;
     }
 }

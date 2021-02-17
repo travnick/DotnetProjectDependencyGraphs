@@ -6,16 +6,12 @@ namespace YumlOutput.Class.Models
 {
     public sealed class YumlClassWithDetails : YumlModel
     {
-        public YumlClassWithDetails(string name)
+        public YumlClassWithDetails(string name) : base(name)
         {
             Properties = new List<string>();
             Methods = new List<string>();
             Notes = new List<string>();
-
-            Name = name;
         }
-
-        public string Name { get; private set; }
 
         public IList<string> Properties { get; private set; }
 
@@ -23,10 +19,10 @@ namespace YumlOutput.Class.Models
 
         public IList<string> Notes { get; private set; }
 
-        protected override string Draw()
+        protected override string DrawForDeclaration()
         {
             var builder = new StringBuilder();
-            builder.Append(string.Format("[{0}", Name));
+            builder.Append(string.Format("[{0}", GetName()));
 
             if (Properties.Any())
             {
@@ -63,6 +59,11 @@ namespace YumlOutput.Class.Models
             return builder.ToString();
         }
 
+        protected override string DrawForRelationship()
+        {
+            return string.Format("[{0}]", GetName());
+        }
+
         protected override int Compare<T>(T other)
         {
             if (!(other is YumlClassWithDetails))
@@ -73,8 +74,8 @@ namespace YumlOutput.Class.Models
             var o = other as YumlClassWithDetails;
 
 
-            var basicCompare = Name == o.Name && BackGroundColour == o.BackGroundColour ? 0 : 1;
-            if(basicCompare != 0)
+            var basicCompare = GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            if (basicCompare != 0)
             {
                 return basicCompare;
             }

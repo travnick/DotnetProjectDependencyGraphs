@@ -2,11 +2,18 @@
 {
     public sealed class YumlNote : YumlModel
     {
-        public string Text { get; set; }
-
-        protected override string Draw()
+        YumlNote(string name) : base(name)
         {
-            return string.Format("[note: {0}]", Text);
+        }
+
+        protected override string DrawForDeclaration()
+        {
+            return string.Format("[note: {0}]", GetName());
+        }
+
+        protected override string DrawForRelationship()
+        {
+            return DrawForDeclaration();
         }
 
         protected override int Compare<T>(T other)
@@ -17,7 +24,7 @@
             }
 
             var o = other as YumlNote;
-            return this.Text == o.Text && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            return this.GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
         }
     }
 }

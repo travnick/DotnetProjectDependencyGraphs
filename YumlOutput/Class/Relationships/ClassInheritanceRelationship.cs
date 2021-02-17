@@ -1,4 +1,5 @@
-﻿using YumlOutput.Class.Models;
+﻿using System.Collections.Generic;
+using YumlOutput.Class.Models;
 
 namespace YumlOutput.Class.Relationships
 {
@@ -6,6 +7,11 @@ namespace YumlOutput.Class.Relationships
     {
         public YumlModel Parent { get; }
         public YumlModel Child { get; }
+
+        public override ISet<string> GetDeclarations()
+        {
+            return new HashSet<string> { Parent.ToDeclarationString(), Child.ToDeclarationString() };
+        }
 
         protected override string GenerateRelationMap()
         {
