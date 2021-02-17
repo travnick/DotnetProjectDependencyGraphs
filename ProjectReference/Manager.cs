@@ -62,28 +62,28 @@ namespace ProjectReference
             switch (rootNode.NodeType)
             {
                 case RootNodeType.SLN:
-                    ProcessSlnRootNode(rootNode, includeExternalReferences);
+                    ProcessSlnRootNode(rootNode.ChildProjects, rootNode, includeExternalReferences);
                     return;
                 case RootNodeType.CSPROJ:
-                    ProcessCsProjRootNode(rootNode, includeExternalReferences);
+                    ProcessCsProjRootNode(rootNode.ChildProjects, rootNode, includeExternalReferences);
                     return;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private static void ProcessSlnRootNode(RootNode rootNode, bool includeExternalReferences)
+        private static void ProcessSlnRootNode(ProjectDetailRepository projectRepository, RootNode rootNode, bool includeExternalReferences)
         {
             var projectLinks = SolutionFileManager.FindAllProjectLinks(rootNode);
-            ProcessLinks(projectLinks, rootNode, includeExternalReferences);
+            ProcessLinks(projectRepository, projectLinks, rootNode, includeExternalReferences);
         }
 
-        private static void ProcessCsProjRootNode(RootNode rootNode, bool includeExternalReferences)
+        private static void ProcessCsProjRootNode(ProjectDetailRepository projectRepository, RootNode rootNode, bool includeExternalReferences)
         {
-            ProcessLinks(new HashSet<InvestigationLink> { new InvestigationLink(null, ProjectLinkObject.MakeOutOfSolutionLink(rootNode.File.FullName)) }, rootNode, includeExternalReferences);
+            ProcessLinks(projectRepository, new HashSet<InvestigationLink> { new InvestigationLink(null, ProjectLinkObject.MakeOutOfSolutionLink(rootNode.File.FullName)) }, rootNode, includeExternalReferences);
         }
 
-        private static void ProcessLinks(ISet<InvestigationLink> linksToBeInvestigated, RootNode rootNode, bool includeExternalReferences)
+        private static void ProcessLinks(ProjectDetailRepository projectRepository, ISet<InvestigationLink> linksToBeInvestigated, RootNode rootNode, bool includeExternalReferences)
         {
             while (linksToBeInvestigated.Any())
             {
@@ -95,7 +95,7 @@ namespace ProjectReference
                     continue;
                 }
 
-                var projectDetail = ProjectFactory.MakeProjectDetail(investigation.FullPath, investigation.Guid, includeExternalReferences);
+                var projectDetail = ProjectFactory.MakeProjectDetail(projectRepository, investigation.FullPath, investigation.Guid, includeExternalReferences);
                 if (investigation.Parent != null)
                 {
                     projectDetail.ParentProjects.Add(new ProjectLinkObject(rootNode.ChildProjects.GetById(investigation.Parent.Id)));

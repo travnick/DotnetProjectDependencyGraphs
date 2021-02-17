@@ -35,7 +35,7 @@ namespace ProjectReferences.Models
 
         public ISet<DllReference> References { get; private set; }
 
-        public ProjectDetail(string fullFilePath, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument projectFile, bool includeExternalReferences)
+        public ProjectDetail(ProjectDetailRepository projectRepository, string fullFilePath, Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument projectFile, bool includeExternalReferences)
         {
             FullPath = fullFilePath;
             ParentProjects = new HashSet<ProjectLinkObject>();
@@ -48,7 +48,7 @@ namespace ProjectReferences.Models
                 Name = Path.GetFileNameWithoutExtension(fullFilePath);
             }
 
-            ChildProjects = GetProjectsDependencies(FullPath, projectFile, nsMgr);
+            ChildProjects = GetDependencies(projectRepository, FullPath, projectFile, nsMgr);
 
             if (includeExternalReferences)
             {
@@ -215,11 +215,11 @@ namespace ProjectReferences.Models
             }
         }
 
-        private ISet<ProjectLinkObject> GetProjectsDependencies(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
+        private ISet<ProjectLinkObject> GetDependencies(ProjectDetailRepository projectRepository, string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
             var references = GetProjectReferences(projectPath, projectFile, nsMgr);
 
-            references.UnionWith(GetLibrariesReferences(projectPath, projectFile, nsMgr));
+            MergeReferencesWith(references, GetRawLibrariesReferences(projectRepository, projectFile, nsMgr));
 
             return references;
         }
@@ -244,7 +244,7 @@ namespace ProjectReferences.Models
             return projectReferenceObjects;
         }
 
-        private static ISet<ProjectLinkObject> GetLibrariesReferences(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
+        private static ISet<ProjectLinkObject> GetRawLibrariesReferences(ProjectDetailRepository projectRepository, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
             var projectReferenceObjects = new HashSet<ProjectLinkObject>();
 
@@ -252,20 +252,20 @@ namespace ProjectReferences.Models
                 XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:AdditionalDependencies", nsMgr);
                 var libsToIgnore = new List<string> { "%(AdditionalDependencies)" };
 
-                projectReferenceObjects.UnionWith(GetAdditionalDependencies(libReferences, libsToIgnore));
+                projectReferenceObjects.UnionWith(GetRawLibrariesReferencesInNode(projectRepository, libReferences, libsToIgnore));
             }
 
             {
                 XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:DelayLoadDLLs", nsMgr);
                 var libsToIgnore = new List<string> { "%(DelayLoadDLLs)" };
 
-                MergeWithDelayLoadedLibraries(projectReferenceObjects, GetAdditionalDependencies(libReferences, libsToIgnore));
+                MergeReferencesWith(projectReferenceObjects, GetRawLibrariesReferencesInNode(projectRepository, libReferences, libsToIgnore));
             }
 
             return projectReferenceObjects;
         }
 
-        private static ISet<ProjectLinkObject> GetAdditionalDependencies(XmlNodeList references, IList<string> libsToIgnore)
+        private static ISet<ProjectLinkObject> GetRawLibrariesReferencesInNode(ProjectDetailRepository projectRepository, XmlNodeList references, IList<string> libsToIgnore)
         {
             var projectReferenceObjects = new HashSet<ProjectLinkObject>();
 
@@ -282,24 +282,49 @@ namespace ProjectReferences.Models
 
                 foreach (var libraryName in libraryNames)
                 {
-                    var projectLinkObject = ProjectLinkObject.MakeOutOfSolutionLink(libraryName);
+                    var name = Path.GetFileNameWithoutExtension(libraryName);
 
-                     projectReferenceObjects.Add(projectLinkObject);
+                    var projects = projectRepository.GetByName(name);
+
+                    if (projects.Count == 0)
+                    {
+                        var projectLinkObject = ProjectLinkObject.MakeOutOfSolutionLink(libraryName);
+
+                        projectReferenceObjects.Add(projectLinkObject);
+                    }
+                    else if (projects.Count == 1)
+                    {
+                        var projectLinkObject = new ProjectLinkObject(projects.First());
+
+                        projectReferenceObjects.Add(projectLinkObject);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("More than one project has the same name {0}", name);
+                    }
                 }
             }
 
             return projectReferenceObjects;
         }
 
-        private static void MergeWithDelayLoadedLibraries(ISet<ProjectLinkObject> currentReferences, ISet<ProjectLinkObject> delayLoadedLibraries)
+        private static void MergeReferencesWith(ISet<ProjectLinkObject> currentReferences, ISet<ProjectLinkObject> delayLoadedLibraries)
         {
-            var alternativeExtension = ".lib";
-
             foreach (var newDependency in delayLoadedLibraries)
             {
-                var alternativeFileName = new ProjectLinkObject(Path.GetFileNameWithoutExtension(newDependency.FullPath) + alternativeExtension);
+                var name = Path.GetFileNameWithoutExtension(newDependency.FullPath);
+                var alternativeNames = new List<ProjectLinkObject> { new ProjectLinkObject(name), new ProjectLinkObject(name + ".lib"), newDependency };
+                bool alreadyExists = false;
 
-                if (!currentReferences.Contains(alternativeFileName))
+                foreach (var alternativeName in alternativeNames)
+                {
+                    if (currentReferences.Contains(alternativeName))
+                    {
+                        alreadyExists |= true;
+                    }
+                }
+
+                if (!alreadyExists)
                 {
                     currentReferences.Add(newDependency);
                 }

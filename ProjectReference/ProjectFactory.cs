@@ -12,7 +12,7 @@ namespace ProjectReference
         /// </summary>
         /// <param name="fullFilePath"></param>
         /// <returns></returns>
-        public static ProjectDetail MakeProjectDetail(string fullFilePath, Guid guid, bool includeExternalReferences)
+        public static ProjectDetail MakeProjectDetail(ProjectDetailRepository projectRepository, string fullFilePath, Guid guid, bool includeExternalReferences)
         {
             if (!File.Exists(fullFilePath))
             {
@@ -26,7 +26,7 @@ namespace ProjectReference
             nsMgr.AddNamespace("msb", "http://schemas.microsoft.com/developer/msbuild/2003");
             projectFile.Load(fullFilePath);
 
-            return new ProjectDetail(fullFilePath, guid, nsMgr, projectFile, includeExternalReferences);
+            return new ProjectDetail(projectRepository, fullFilePath, guid, nsMgr, projectFile, includeExternalReferences);
         }
     }
 }
