@@ -246,27 +246,64 @@ namespace ProjectReferences.Models
 
         private static ISet<ProjectLinkObject> GetLibrariesReferences(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
-            XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:AdditionalDependencies", nsMgr);
             var projectReferenceObjects = new HashSet<ProjectLinkObject>();
 
-            foreach (XmlElement reference in libReferences)
+            {
+                XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:AdditionalDependencies", nsMgr);
+                var libsToIgnore = new List<string> { "%(AdditionalDependencies)" };
+
+                projectReferenceObjects.UnionWith(GetAdditionalDependencies(libReferences, libsToIgnore));
+            }
+
+            {
+                XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:DelayLoadDLLs", nsMgr);
+                var libsToIgnore = new List<string> { "%(DelayLoadDLLs)" };
+
+                MergeWithDelayLoadedLibraries(projectReferenceObjects, GetAdditionalDependencies(libReferences, libsToIgnore));
+            }
+
+            return projectReferenceObjects;
+        }
+
+        private static ISet<ProjectLinkObject> GetAdditionalDependencies(XmlNodeList references, IList<string> libsToIgnore)
+        {
+            var projectReferenceObjects = new HashSet<ProjectLinkObject>();
+
+            foreach (XmlElement reference in references)
             {
                 var libraryNames = reference.InnerText.Split(';').ToList();
-                libraryNames.Remove("%(AdditionalDependencies)");
+
+                foreach (var libToIgnore in libsToIgnore)
+                {
+                    libraryNames.Remove(libToIgnore);
+                }
+
                 libraryNames.Remove("");
 
                 foreach (var libraryName in libraryNames)
                 {
                     var projectLinkObject = ProjectLinkObject.MakeOutOfSolutionLink(libraryName);
 
-                    if (!projectReferenceObjects.Contains(projectLinkObject))
-                    {
-                        projectReferenceObjects.Add(projectLinkObject);
-                    }
+                     projectReferenceObjects.Add(projectLinkObject);
                 }
             }
 
             return projectReferenceObjects;
+        }
+
+        private static void MergeWithDelayLoadedLibraries(ISet<ProjectLinkObject> currentReferences, ISet<ProjectLinkObject> delayLoadedLibraries)
+        {
+            var alternativeExtension = ".lib";
+
+            foreach (var newDependency in delayLoadedLibraries)
+            {
+                var alternativeFileName = new ProjectLinkObject(Path.GetFileNameWithoutExtension(newDependency.FullPath) + alternativeExtension);
+
+                if (!currentReferences.Contains(alternativeFileName))
+                {
+                    currentReferences.Add(newDependency);
+                }
+            }
         }
 
         private static ISet<DllReference> GetExternalReferences(string fullFilePath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
