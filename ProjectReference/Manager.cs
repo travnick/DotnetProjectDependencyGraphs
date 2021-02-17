@@ -112,8 +112,14 @@ namespace ProjectReference
 
         public static OutputResponse CreateOutput(AnalysisRequest request, RootNode rootNode)
         {
-            if (request == null) throw new ArgumentNullException("request");
-            if (rootNode == null) throw new ArgumentNullException("rootNode");
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+            if (rootNode == null)
+            {
+                throw new ArgumentNullException("rootNode");
+            }
 
             IOutputProvider outputProvider = OutputFactory.CreateProvider(request.OutputType);
             return outputProvider.Create(rootNode, Path.Combine(Directory.GetCurrentDirectory(), request.OutputFolder));
