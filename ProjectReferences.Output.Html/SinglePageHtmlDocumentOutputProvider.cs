@@ -18,26 +18,26 @@ namespace ProjectReferences.Output.Html
 
             var builder = new StringBuilder();
 
-            builder.AppendLine(@"<html>");
+            _ = builder.AppendLine(@"<html>");
 
             AppendHtmlHead(builder);
 
-            builder.AppendLine(@"<body>");
+            _ = builder.AppendLine(@"<body>");
 
             var translator = new RootNodeToYumlClassDiagramTranslator(rootNode.ChildProjects);
 
             AddOverallRootDependencies(rootNode, outputFolder, builder, translator);
 
-            builder.AppendLine(@"<div id='accordian'>");
+            _ = builder.AppendLine(@"<div id='accordian'>");
 
             AddReferences(rootNode, outputFolder, builder, translator);
 
-            builder.AppendLine(@"</div>");
+            _ = builder.AppendLine(@"</div>");
 
-            builder.AppendLine(@"</body>");
-            builder.AppendLine(@"</html>");
+            _ = builder.AppendLine(@"</body>");
+            _ = builder.AppendLine(@"</html>");
 
-            var htmlOutputFilePath = Path.Combine(outputFolder, "references.html");
+            string htmlOutputFilePath = Path.Combine(outputFolder, "references.html");
 
             FileHandler.EnsureFolderExistsForFullyPathedLink(htmlOutputFilePath);
             File.WriteAllText(htmlOutputFilePath, builder.ToString());
@@ -49,13 +49,13 @@ namespace ProjectReferences.Output.Html
         {
             var yumlClassOutput = translator.Translate(rootNode, true);
 
-            builder.AppendLine(string.Format(@"<h1>All references for: {0}</h1>", yumlClassOutput.RootFile));
+            _ = builder.AppendLine(string.Format(@"<h1>All references for: {0}</h1>", yumlClassOutput.RootFile));
 
-            var rootNodeOutputFileName = MakeOutputImageFileName(outputFolder, yumlClassOutput.RootFile);
+            string rootNodeOutputFileName = MakeOutputImageFileName(outputFolder, yumlClassOutput.RootFile);
 
             FetchImage(yumlClassOutput.DependencyDiagram, rootNodeOutputFileName);
 
-            builder.AppendLine(String.Format(@"<p>Image for whole reference list: <a href='{0}' target='_blank'> View Yuml Image</a></p>", rootNodeOutputFileName));
+            _ = builder.AppendLine(string.Format(@"<p>Image for whole reference list: <a href='{0}' target='_blank'> View Yuml Image</a></p>", rootNodeOutputFileName));
         }
 
         private static void AddReferences(RootNode rootNode, string outputFolder, StringBuilder builder, RootNodeToYumlClassDiagramTranslator translator)
@@ -66,14 +66,14 @@ namespace ProjectReferences.Output.Html
 
                 var projectOutput = translator.Translate(projectDetail, true);
 
-                builder.AppendLine(string.Format(@"<h2>{0}</h2>", Path.GetFileName(projectOutput.RootFile)));
-                builder.AppendLine(string.Format(@"<div class='projectReference' id='{0}'>", projectDetail.Id));
+                _ = builder.AppendLine(string.Format(@"<h2>{0}</h2>", Path.GetFileName(projectOutput.RootFile)));
+                _ = builder.AppendLine(string.Format(@"<div class='projectReference' id='{0}'>", projectDetail.Id));
 
                 AddReferences(builder, outputFolder, projectDetail, projectOutput);
 
                 AddReferencedBy(builder, outputFolder, projectDetail, projectOutput);
 
-                builder.AppendLine(@"</div>");
+                _ = builder.AppendLine(@"</div>");
             }
         }
 
@@ -81,24 +81,24 @@ namespace ProjectReferences.Output.Html
         {
             if (projectOutput.DependencyDiagram.Relationships.Count > 0)
             {
-                var projectOutputFileName = MakeOutputImageFileName(outputFolder, projectOutput.RootFile);
+                string projectOutputFileName = MakeOutputImageFileName(outputFolder, projectOutput.RootFile);
                 FetchImage(projectOutput.DependencyDiagram, projectOutputFileName);
-                builder.AppendLine(string.Format(@"<h2>{0} - <a href='{1}' target='_blank'>View Yuml Image</a></h2>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
+                _ = builder.AppendLine(string.Format(@"<h2>{0} - <a href='{1}' target='_blank'>View Yuml Image</a></h2>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
             }
 
             if (projectDetail.ChildProjects.Any())
             {
-                builder.AppendLine(@"<p>This project references:</p>");
-                builder.AppendLine(@"<ul>");
+                _ = builder.AppendLine(@"<p>This project references:</p>");
+                _ = builder.AppendLine(@"<ul>");
                 foreach (var reference in projectDetail.ChildProjects)
                 {
-                    builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
+                    _ = builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
                 }
-                builder.AppendLine(@"</ul>");
+                _ = builder.AppendLine(@"</ul>");
             }
             else
             {
-                builder.AppendLine("<p>This project does not reference any other projects</p>");
+                _ = builder.AppendLine("<p>This project does not reference any other projects</p>");
             }
         }
 
@@ -106,38 +106,38 @@ namespace ProjectReferences.Output.Html
         {
             if (projectDetail.ParentProjects.Any())
             {
-                builder.AppendLine(@"<p>This project is referenced by:</p>");
+                _ = builder.AppendLine(@"<p>This project is referenced by:</p>");
 
                 if (projectOutput.ParentDiagram.Relationships.Count > 0)
                 {
-                    var projectOutputFileName = MakeParentOutputImageFileName(outputFolder, projectOutput.RootFile);
+                    string projectOutputFileName = MakeParentOutputImageFileName(outputFolder, projectOutput.RootFile);
                     FetchImage(projectOutput.ParentDiagram, projectOutputFileName);
-                    builder.AppendLine(string.Format(@"<a href='{1}' target='_blank'>View Yuml Image</a>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
+                    _ = builder.AppendLine(string.Format(@"<a href='{1}' target='_blank'>View Yuml Image</a>", Path.GetFileName(projectOutput.RootFile), projectOutputFileName));
                 }
 
-                builder.AppendLine(@"<ul>");
+                _ = builder.AppendLine(@"<ul>");
 
                 foreach (var reference in projectDetail.ParentProjects.OrderBy(x => Path.GetFileName(x.FullPath)))
                 {
-                    builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
+                    _ = builder.AppendLine(string.Format(@"<li><a href='#{0}'>{1}</a></li>", reference.Id, Path.GetFileName(reference.FullPath)));
                 }
 
-                builder.AppendLine(@"</ul>");
+                _ = builder.AppendLine(@"</ul>");
             }
             else
             {
-                builder.AppendLine("<p>This project is not referenced by any other projects</p>");
+                _ = builder.AppendLine("<p>This project is not referenced by any other projects</p>");
             }
         }
 
         private static void AppendHtmlHead(StringBuilder builder)
         {
-            builder.AppendLine(@"<head>");
-            builder.AppendLine(@"<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js'></script>");
-            builder.AppendLine(@"<script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js'></script>");
-            builder.AppendLine(@"<link rel='stylesheet' type='text/css' href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/eggplant/jquery-ui.css' />");
+            _ = builder.AppendLine(@"<head>");
+            _ = builder.AppendLine(@"<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js'></script>");
+            _ = builder.AppendLine(@"<script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js'></script>");
+            _ = builder.AppendLine(@"<link rel='stylesheet' type='text/css' href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/eggplant/jquery-ui.css' />");
 
-            builder.AppendLine(@"
+            _ = builder.AppendLine(@"
                 <script>
                     $(document).ready(function() {
                         $('#accordian').accordion();
@@ -151,7 +151,7 @@ namespace ProjectReferences.Output.Html
                 </script>"
             );
 
-            builder.AppendLine(@"</head>");
+            _ = builder.AppendLine(@"</head>");
         }
 
         private static void FetchImage(YumlOutput.Class.YumlClassDiagram projectOutput, string projectOutputFileName)

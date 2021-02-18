@@ -6,6 +6,7 @@ namespace YumlOutput.Class.Relationships
     public sealed class SimpleAssociation : YumlRelationshipBase
     {
         public YumlModel Parent { get; }
+
         public YumlModel Child { get; }
 
         public SimpleAssociation(YumlModel parent, YumlModel child)

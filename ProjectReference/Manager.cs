@@ -68,7 +68,7 @@ namespace ProjectReference
                     ProcessCsProjRootNode(rootNode.ChildProjects, rootNode, includeExternalReferences);
                     return;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(string.Format("Node type is not supported '{0}'", rootNode.NodeType));
             }
         }
 
@@ -88,7 +88,7 @@ namespace ProjectReference
             while (linksToBeInvestigated.Any())
             {
                 var investigation = linksToBeInvestigated.First();
-                linksToBeInvestigated.Remove(investigation);
+                _ = linksToBeInvestigated.Remove(investigation);
 
                 if (!investigation.IsProjectLoadable())
                 {
@@ -98,7 +98,7 @@ namespace ProjectReference
                 var projectDetail = ProjectFactory.MakeProjectDetail(projectRepository, investigation.FullPath, investigation.Guid, includeExternalReferences);
                 if (investigation.Parent != null)
                 {
-                    projectDetail.ParentProjects.Add(new ProjectLinkObject(rootNode.ChildProjects.GetById(investigation.Parent.Id)));
+                    _ = projectDetail.ParentProjects.Add(new ProjectLinkObject(rootNode.ChildProjects.GetById(investigation.Parent.Id)));
                 }
 
                 var parent = new ProjectLinkObject(projectDetail);
@@ -121,7 +121,7 @@ namespace ProjectReference
                 throw new ArgumentNullException("rootNode");
             }
 
-            IOutputProvider outputProvider = OutputFactory.CreateProvider(request.OutputType);
+            var outputProvider = OutputFactory.CreateProvider(request.OutputType);
             return outputProvider.Create(rootNode, Path.Combine(Directory.GetCurrentDirectory(), request.OutputFolder));
         }
     }

@@ -23,8 +23,8 @@ namespace YumlOutput.Class
 
             if (_newLineForEachRelationship)
             {
-                builder.AppendLine();
-                builder.AppendLine("// Relationships");
+                _ = builder.AppendLine();
+                _ = builder.AppendLine("// Relationships");
             }
 
             foreach (var relationship in Relationships)
@@ -33,15 +33,15 @@ namespace YumlOutput.Class
 
                 if (_newLineForEachRelationship)
                 {
-                    builder.AppendLine(relationship.ToString());
+                    _ = builder.AppendLine(relationship.ToString());
                 }
                 else
                 {
-                    builder.Append(relationship);
+                    _ = builder.Append(relationship);
                 }
             }
 
-            builder.Insert(0, GetDecarationsString(declarations));
+            _ = builder.Insert(0, GetDecarationsString(declarations));
 
             return builder.ToString();
         }
@@ -52,18 +52,18 @@ namespace YumlOutput.Class
 
             if (_newLineForEachRelationship)
             {
-                builder.AppendLine("// Declarations");
+                _ = builder.AppendLine("// Declarations");
             }
 
-            foreach (var declaration in declarations)
+            foreach (string declaration in declarations)
             {
                 if (_newLineForEachRelationship)
                 {
-                    builder.AppendLine(declaration);
+                    _ = builder.AppendLine(declaration);
                 }
                 else
                 {
-                    builder.Append(declaration);
+                    _ = builder.Append(declaration);
                 }
             }
 

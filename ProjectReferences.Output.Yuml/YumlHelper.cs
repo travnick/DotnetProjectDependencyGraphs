@@ -1,15 +1,12 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-using ProjectReferences.Output.Yuml.Models;
 using ProjectReferences.Shared;
 using YumlOutput.Class;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ProjectReferences.Output.Yuml
 {
@@ -17,7 +14,7 @@ namespace ProjectReferences.Output.Yuml
     {
         public static string EncodeForHttpPost(string message)
         {
-            var value = message.Trim();
+            string value = message.Trim();
 
             value = Regex.Replace(value, @"^\s$[\r\n]*", "", RegexOptions.Multiline);
             value = value.Replace("+", "%2B");
@@ -34,6 +31,7 @@ namespace ProjectReferences.Output.Yuml
         }
 
         public static string YumlClassUrl { get { return @"https://yuml.me/diagram/nofunky/class"; } }
+
         public static string YumlImageUrl { get { return @"https://yuml.me"; } }
 
         public static string ReplaceSpaces(string url)
@@ -43,7 +41,7 @@ namespace ProjectReferences.Output.Yuml
 
         public static string CommaSeperateRelationshipsOnMultipleLines(string relationshsipTree)
         {
-            var tree = relationshsipTree.Replace(Environment.NewLine, ",");
+            string tree = relationshsipTree.Replace(Environment.NewLine, ",");
             if (tree.EndsWith(","))
             {
                 tree = tree.Substring(0, tree.Length - 1);
@@ -61,15 +59,15 @@ namespace ProjectReferences.Output.Yuml
             Logger.Log(string.Format("Generating image on yuml server, class diagram: '{0}'", output), LogLevel.High);
 
             ServicePointManager.Expect100Continue = false;
-            WebRequest req = WebRequest.Create(YumlClassUrl);
+            var req = WebRequest.Create(YumlClassUrl);
 
             //req.Proxy = new System.Net.WebProxy(ProxyString, true);
             //Add these, as we're doing a POST
             req.ContentType = "application/x-www-form-urlencoded";
             req.Method = "POST";
             //We need to count how many bytes we're sending. Post'ed Faked Forms should be name=value&
-            var diagramDescriptionRaw = output.ToString();
-            var diagramDescription = "dsl_text=" + EncodeForHttpPost(diagramDescriptionRaw);
+            string diagramDescriptionRaw = output.ToString();
+            string diagramDescription = "dsl_text=" + EncodeForHttpPost(diagramDescriptionRaw);
             byte[] bytes = Encoding.ASCII.GetBytes(diagramDescription);
             req.ContentLength = bytes.Length;
 
@@ -91,7 +89,7 @@ namespace ProjectReferences.Output.Yuml
 
             var imageFetcher = new ImageFetcher(htmlContent);
 
-            Thread thread = new Thread(imageFetcher.FetchImageSrc);
+            var thread = new Thread(imageFetcher.FetchImageSrc);
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             thread.Join();
@@ -105,13 +103,14 @@ namespace ProjectReferences.Output.Yuml
             {
                 this.htmlContent = htmlContent;
             }
+
             public void FetchImageSrc()
             {
                 using (var browser = new WebBrowser())
                 {
-                    var src = htmlContent;
+                    string src = htmlContent;
 
-                    using (WebClient client = new WebClient())
+                    using (var client = new WebClient())
                     {
                         ImageUrl = YumlImageUrl + "/" + src;
 
@@ -121,6 +120,7 @@ namespace ProjectReferences.Output.Yuml
             }
 
             private readonly string htmlContent;
+
             public string ImageUrl { get; private set; }
         }
 

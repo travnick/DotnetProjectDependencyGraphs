@@ -6,6 +6,7 @@ namespace YumlOutput.Class.Relationships
     public sealed class NoteRelationship : YumlRelationshipBase
     {
         public YumlModel Item { get; }
+
         public YumlNote Note { get; }
 
         public override ISet<string> GetDeclarations()

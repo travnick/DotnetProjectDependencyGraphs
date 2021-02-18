@@ -36,11 +36,11 @@ namespace ProjectReferences.Models
             {
                 throw new InvalidOperationException("Can not find type 'Microsoft.Build.Construction.SolutionParser' are you missing a assembly reference to 'Microsoft.Build.dll'?");
             }
-            var solutionParser = s_SolutionParser.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).First().Invoke(null);
+            object solutionParser = s_SolutionParser.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).First().Invoke(null);
             using (var streamReader = new StreamReader(solutionFileName))
             {
                 s_SolutionParser_solutionReader.SetValue(solutionParser, streamReader, null);
-                s_SolutionParser_parseSolution.Invoke(solutionParser, null);
+                _ = s_SolutionParser_parseSolution.Invoke(solutionParser, null);
             }
             var projects = new List<SolutionProject>();
             var array = (Array)s_SolutionParser_projects.GetValue(solutionParser, null);
@@ -48,7 +48,8 @@ namespace ProjectReferences.Models
             {
                 projects.Add(new SolutionProject(array.GetValue(i)));
             }
-            this.Projects = projects;
+
+            Projects = projects;
         }
     }
 }

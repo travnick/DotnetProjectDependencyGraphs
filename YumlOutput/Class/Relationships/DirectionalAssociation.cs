@@ -6,7 +6,9 @@ namespace YumlOutput.Class.Relationships
     public sealed class DirectionalAssociation : YumlRelationshipBase
     {
         public YumlModel Parent { get; }
+
         public YumlModel Child { get; }
+
         public string DirectionalMessage { get; }
 
         public override ISet<string> GetDeclarations()

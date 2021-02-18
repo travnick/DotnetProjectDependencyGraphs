@@ -22,39 +22,39 @@ namespace YumlOutput.Class.Models
         protected override string DrawForDeclaration()
         {
             var builder = new StringBuilder();
-            builder.Append(string.Format("[{0}", GetName()));
+            _ = builder.Append(string.Format("[{0}", GetName()));
 
             if (Properties.Any())
             {
-                builder.Append("|");
+                _ = builder.Append("|");
 
-                foreach (var property in Properties)
+                foreach (string property in Properties)
                 {
-                    builder.Append(string.Format("+{0};", property));
+                    _ = builder.Append(string.Format("+{0};", property));
                 }
             }
 
             if (Methods.Any())
             {
-                builder.Append("|");
+                _ = builder.Append("|");
 
-                foreach (var method in Methods)
+                foreach (string method in Methods)
                 {
-                    builder.Append(string.Format("+{0}();", method));
+                    _ = builder.Append(string.Format("+{0}();", method));
                 }
             }
 
             if (Notes.Any())
             {
-                builder.Append("|");
+                _ = builder.Append("|");
 
-                foreach (var note in Notes)
+                foreach (string note in Notes)
                 {
-                    builder.Append(string.Format("{0};", note));
+                    _ = builder.Append(string.Format("{0};", note));
                 }
             }
 
-            builder.Append("]");
+            _ = builder.Append("]");
 
             return builder.ToString();
         }
@@ -73,8 +73,7 @@ namespace YumlOutput.Class.Models
 
             var o = other as YumlClassWithDetails;
 
-
-            var basicCompare = GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            int basicCompare = GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
             if (basicCompare != 0)
             {
                 return basicCompare;
@@ -94,7 +93,6 @@ namespace YumlOutput.Class.Models
             {
                 return -1;
             }
-
 
             return basicCompare;
         }

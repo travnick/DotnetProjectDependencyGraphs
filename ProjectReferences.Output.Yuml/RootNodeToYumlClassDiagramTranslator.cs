@@ -50,7 +50,7 @@ namespace ProjectReferences.Output.Yuml
 
         private void GenerateDependencyDiagram(ProjectDetail projectDetail, ISet<YumlRelationshipBase> existingRelationships, bool newlineForEachRelationship)
         {
-            existingRelationships.UnionWith(MakeYumlDependencies(projectDetail, newlineForEachRelationship));
+            existingRelationships.UnionWith(MakeYumlDependencies(projectDetail));
 
             foreach (var linkObject in projectDetail.ChildProjects)
             {
@@ -67,12 +67,12 @@ namespace ProjectReferences.Output.Yuml
             var classDiagram = new YumlClassDiagram(newlineForEachRelationship);
             foreach (var detail in rootNode.ChildProjects)
             {
-                classDiagram.Relationships.UnionWith(MakeYumlDependencies(detail, newlineForEachRelationship));
+                classDiagram.Relationships.UnionWith(MakeYumlDependencies(detail));
             }
             return classDiagram;
         }
 
-        private ISet<YumlRelationshipBase> MakeYumlDependencies(ProjectDetail projectDetail, bool newlineForEachRelationship)
+        private ISet<YumlRelationshipBase> MakeYumlDependencies(ProjectDetail projectDetail)
         {
             var relationships = new HashSet<YumlRelationshipBase>();
             var detailModel = MakeClass(projectDetail);
@@ -81,13 +81,13 @@ namespace ProjectReferences.Output.Yuml
             {
                 var childProjectDetail = ProjectRepository.GetById(linkObject.Id);
 
-                relationships.Add(new SimpleAssociation(detailModel, MakeClass(childProjectDetail, linkObject)));
+                _ = relationships.Add(new SimpleAssociation(detailModel, MakeClass(childProjectDetail, linkObject)));
             }
 
             foreach (var dllReference in projectDetail.References)
             {
                 var childModel = MakeClass(dllReference);
-                relationships.Add(new SimpleAssociation(detailModel, childModel));
+                _ = relationships.Add(new SimpleAssociation(detailModel, childModel));
             }
 
             return relationships;
@@ -107,7 +107,7 @@ namespace ProjectReferences.Output.Yuml
 
         private void GenerateParentDiagram(ProjectDetail projectDetail, ISet<YumlRelationshipBase> existingRelationships, bool newlineForEachRelationship)
         {
-            existingRelationships.UnionWith(MakeYumlParents(projectDetail, newlineForEachRelationship));
+            existingRelationships.UnionWith(MakeYumlParents(projectDetail));
 
             foreach (var linkObject in projectDetail.ParentProjects)
             {
@@ -115,7 +115,7 @@ namespace ProjectReferences.Output.Yuml
             }
         }
 
-        private ISet<YumlRelationshipBase> MakeYumlParents(ProjectDetail projectDetail, bool newlineForEachRelationship)
+        private ISet<YumlRelationshipBase> MakeYumlParents(ProjectDetail projectDetail)
         {
             var relationships = new HashSet<YumlRelationshipBase>();
             var detailModel = MakeClass(projectDetail);
@@ -123,13 +123,13 @@ namespace ProjectReferences.Output.Yuml
             foreach (var linkObject in projectDetail.ParentProjects)
             {
                 var parentModel = MakeClass(ProjectRepository.GetById(linkObject.Id));
-                relationships.Add(new SimpleAssociation(parentModel, detailModel));
+                _ = relationships.Add(new SimpleAssociation(parentModel, detailModel));
             }
 
             foreach (var dllReference in projectDetail.References)
             {
                 var parentModel = MakeClass(dllReference);
-                relationships.Add(new SimpleAssociation(parentModel, detailModel));
+                _ = relationships.Add(new SimpleAssociation(parentModel, detailModel));
             }
 
             return relationships;

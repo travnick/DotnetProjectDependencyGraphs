@@ -20,8 +20,8 @@ namespace ProjectReference
             }
 
             //Create an xml doc with correct namespace to analysis project file.
-            XmlDocument projectFile = new XmlDocument();
-            XmlNamespaceManager nsMgr = new XmlNamespaceManager(projectFile.NameTable);
+            var projectFile = new XmlDocument();
+            var nsMgr = new XmlNamespaceManager(projectFile.NameTable);
 
             nsMgr.AddNamespace("msb", "http://schemas.microsoft.com/developer/msbuild/2003");
             projectFile.Load(fullFilePath);

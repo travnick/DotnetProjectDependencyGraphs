@@ -66,7 +66,7 @@ namespace ProjectReferences.Models
             {
                 if (!ParentProjects.Any(p => p.Id.Equals(link.Id)))
                 {
-                    ParentProjects.Add(link);
+                    _ = ParentProjects.Add(link);
                 }
             }
         }
@@ -88,7 +88,7 @@ namespace ProjectReferences.Models
                 var projectGuid = Guid.Parse(guidNode.InnerText);
                 if (projectGuid != projectGuidInSolution && projectGuidInSolution != new Guid())
                 {
-                    throw new ArgumentException(String.Format("Guid in soludion '{0}' and in project file '{1}' does not match", projectGuidInSolution, projectGuid));
+                    throw new ArgumentException(string.Format("Guid in soludion '{0}' and in project file '{1}' does not match", projectGuidInSolution, projectGuid));
                 }
                 Id = projectGuid;
             }
@@ -199,19 +199,19 @@ namespace ProjectReferences.Models
             }
         }
 
-        private static ProjectDetail.ProjectType GetProjectType(string fullFilePath)
+        private static ProjectType GetProjectType(string fullFilePath)
         {
             if (fullFilePath.EndsWith(".csproj"))
             {
-                return ProjectDetail.ProjectType.CSharp;
+                return ProjectType.CSharp;
             }
             else if (fullFilePath.EndsWith(".vcxproj"))
             {
-                return ProjectDetail.ProjectType.Cpp;
+                return ProjectType.Cpp;
             }
             else
             {
-                return ProjectDetail.ProjectType.Other;
+                return ProjectType.Other;
             }
         }
 
@@ -226,9 +226,9 @@ namespace ProjectReferences.Models
 
         private static ISet<ProjectLinkObject> GetProjectReferences(string projectPath, XmlDocument projectFile, XmlNamespaceManager nsMgr)
         {
-            DirectoryInfo projectDirectory = new FileInfo(projectPath).Directory;
+            var projectDirectory = new FileInfo(projectPath).Directory;
 
-            XmlNodeList projectReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemGroup/msb:ProjectReference", nsMgr);
+            var projectReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemGroup/msb:ProjectReference", nsMgr);
             var projectReferenceObjects = new HashSet<ProjectLinkObject>();
 
             foreach (XmlElement reference in projectReferences)
@@ -238,7 +238,7 @@ namespace ProjectReferences.Models
 
                 var projectLinkObject = new ProjectLinkObject(subProjectPath, id);
 
-                projectReferenceObjects.Add(projectLinkObject);
+                _ = projectReferenceObjects.Add(projectLinkObject);
             }
 
             return projectReferenceObjects;
@@ -312,7 +312,7 @@ namespace ProjectReferences.Models
         {
             foreach (var newDependency in delayLoadedLibraries)
             {
-                var name = Path.GetFileNameWithoutExtension(newDependency.FullPath);
+                string name = Path.GetFileNameWithoutExtension(newDependency.FullPath);
                 var alternativeNames = new List<ProjectLinkObject> { new ProjectLinkObject(name), new ProjectLinkObject(name + ".lib"), newDependency };
                 bool alreadyExists = false;
 
@@ -326,7 +326,7 @@ namespace ProjectReferences.Models
 
                 if (!alreadyExists)
                 {
-                    currentReferences.Add(newDependency);
+                    _ = currentReferences.Add(newDependency);
                 }
             }
         }
@@ -344,8 +344,8 @@ namespace ProjectReferences.Models
 
             foreach (XmlElement reference in dllReferences ?? Enumerable.Empty<XmlElement>())
             {
-                var include = reference.GetAttribute("Include");
-                var version = reference.GetAttribute("Version");
+                string include = reference.GetAttribute("Include");
+                string version = reference.GetAttribute("Version");
 
                 //if not version stored as XML then try and get the hint path.
                 if (string.IsNullOrWhiteSpace(version))
@@ -356,19 +356,19 @@ namespace ProjectReferences.Models
                     {
                         var csprojFile = new FileInfo(fullFilePath);
 
-                        var directory = csprojFile.Directory.FullName + (relativeHintPath.StartsWith(@"\") ? "" : @"\");
-                        var dllPath = Path.GetFullPath(directory + relativeHintPath);
+                        string directory = csprojFile.Directory.FullName + (relativeHintPath.StartsWith(@"\") ? "" : @"\");
+                        string dllPath = Path.GetFullPath(directory + relativeHintPath);
                         var dllFile = new FileInfo(dllPath);
                         if (dllFile.Exists)
                         {
-                            Assembly assembly = Assembly.LoadFrom(dllFile.FullName);
-                            Version ver = assembly.GetName().Version;
+                            var assembly = Assembly.LoadFrom(dllFile.FullName);
+                            var ver = assembly.GetName().Version;
                             version = ver.ToString();
                         }
                     }
                 }
 
-                dllReferenceObjects.Add(new DllReference { AssemblyName = include.Split(',')[0], Version = version });
+                _ = dllReferenceObjects.Add(new DllReference { AssemblyName = include.Split(',')[0], Version = version });
             }
 
             return dllReferenceObjects;
@@ -378,8 +378,8 @@ namespace ProjectReferences.Models
         {
             if (!string.IsNullOrWhiteSpace(inner) && inner.StartsWith("<HintPath"))
             {
-                var tagEndString = "</HintPath>";
-                var tagEnd = inner.IndexOf(tagEndString);
+                string tagEndString = "</HintPath>";
+                int tagEnd = inner.IndexOf(tagEndString);
                 if (tagEnd > 0)
                 {
                     inner = inner.Substring(0, tagEnd + tagEndString.Length);

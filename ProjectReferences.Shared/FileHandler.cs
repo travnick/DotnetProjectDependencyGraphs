@@ -28,7 +28,7 @@ namespace ProjectReferences.Shared
         /// <param name="fullFilePath"></param>
         public static void EnsureFolderExistsForFullyPathedLink(string fullFilePath)
         {
-            var dir = Path.GetDirectoryName(fullFilePath);
+            string dir = Path.GetDirectoryName(fullFilePath);
             if (string.IsNullOrWhiteSpace(dir))
             {
                 throw new ArgumentOutOfRangeException(fullFilePath);
@@ -36,7 +36,7 @@ namespace ProjectReferences.Shared
 
             if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory(dir);
+                _ = Directory.CreateDirectory(dir);
             }
         }
     }

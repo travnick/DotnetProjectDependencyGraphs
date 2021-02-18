@@ -6,9 +6,11 @@ namespace YumlOutput.Class.Relationships
     public sealed class CardianRelationship : YumlRelationshipBase
     {
         public YumlModel Parent { get; }
+
         public string ParentCardianRelationShip { get; }
 
         public YumlModel Child { get; }
+
         public string ChildCardianRelationShip { get; }
 
         public override ISet<string> GetDeclarations()

@@ -26,17 +26,17 @@ namespace ProjectReferences.Console
              */
 
             Logger.Log("parsing args");
-            AnalysisRequest request = new ParseCommandLineArgs().Process(GetAppSettingValues(), args);
+            var request = new ParseCommandLineArgs().Process(GetAppSettingValues(), args);
 
             Logger.SetupLogger(request);
 
             //set the current directory to ensure all relative file paths workout correctly.
-            string dir = new FileInfo(request.RootFile).Directory.FullName;
+            _ = new FileInfo(request.RootFile).Directory.FullName;
             //Logger.Log("setting current / working directory to: " + dir);
             //Directory.SetCurrentDirectory(dir);
 
             Logger.Log("Creating project reference collection for root file: " + request.RootFile);
-            RootNode rootNode = Manager.CreateRootNode(request);
+            var rootNode = Manager.CreateRootNode(request);
 
             Logger.Log("Processing rootNode to fill all project references");
             Manager.Process(rootNode, request.IncludeExternalReferences);
@@ -52,19 +52,19 @@ namespace ProjectReferences.Console
         {
             var request = new AnalysisRequest();
 
-            var outputFolder = ConfigurationManager.AppSettings["OutputFolder"];
+            string outputFolder = ConfigurationManager.AppSettings["OutputFolder"];
             if (!string.IsNullOrWhiteSpace(outputFolder))
             {
                 request.LogOutputFolderLocation = outputFolder;
             }
 
-            var outputFile = ConfigurationManager.AppSettings["OutputFile"];
+            string outputFile = ConfigurationManager.AppSettings["OutputFile"];
             if (!string.IsNullOrWhiteSpace(outputFile))
             {
                 request.LogOutputFileLocation = outputFile;
             }
 
-            var loggerType = ConfigurationManager.AppSettings["LoggerType"];
+            string loggerType = ConfigurationManager.AppSettings["LoggerType"];
             if (!string.IsNullOrWhiteSpace(loggerType))
             {
                 if (Enum.IsDefined(typeof(LogType), loggerType))
@@ -73,7 +73,7 @@ namespace ProjectReferences.Console
                 }
             }
 
-            var loggerLevel = ConfigurationManager.AppSettings["LoggerLevel"];
+            string loggerLevel = ConfigurationManager.AppSettings["LoggerLevel"];
             if (!string.IsNullOrWhiteSpace(loggerLevel))
             {
                 if (Enum.IsDefined(typeof(LogLevel), loggerLevel))
@@ -82,11 +82,10 @@ namespace ProjectReferences.Console
                 }
             }
 
-            var includeExternalRefs = ConfigurationManager.AppSettings["IncludeExternalReferences"];
+            string includeExternalRefs = ConfigurationManager.AppSettings["IncludeExternalReferences"];
             if (!string.IsNullOrWhiteSpace(includeExternalRefs))
             {
-                bool result;
-                if (bool.TryParse(includeExternalRefs, out result))
+                if (bool.TryParse(includeExternalRefs, out bool result))
                 {
                     request.IncludeExternalReferences = result;
                 }

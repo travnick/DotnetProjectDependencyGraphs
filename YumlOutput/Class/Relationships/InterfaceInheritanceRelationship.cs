@@ -6,6 +6,7 @@ namespace YumlOutput.Class.Relationships
     public sealed class InterfaceInheritanceRelationship : YumlRelationshipBase
     {
         public YumlModel Parent { get; }
+
         public YumlModel Child { get; }
 
         public override ISet<string> GetDeclarations()

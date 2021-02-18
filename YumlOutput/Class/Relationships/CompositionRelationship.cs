@@ -6,7 +6,9 @@ namespace YumlOutput.Class.Relationships
     public sealed class CompositionRelationship : YumlRelationshipBase
     {
         public YumlModel Parent { get; }
+
         public YumlModel Child { get; }
+
         public int? CompositionCount { get; }
 
         public override ISet<string> GetDeclarations()
