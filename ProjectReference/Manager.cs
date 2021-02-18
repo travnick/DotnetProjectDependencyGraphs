@@ -63,13 +63,17 @@ namespace ProjectReference
             {
                 case RootNodeType.SLN:
                     ProcessSlnRootNode(rootNode.ChildProjects, rootNode, includeExternalReferences);
-                    return;
+                    break;
+
                 case RootNodeType.CSPROJ:
                     ProcessCsProjRootNode(rootNode.ChildProjects, rootNode, includeExternalReferences);
-                    return;
+                    break;
+
                 default:
                     throw new ArgumentOutOfRangeException(string.Format("Node type is not supported '{0}'", rootNode.NodeType));
             }
+
+            rootNode.OptimizeReferences();
         }
 
         private static void ProcessSlnRootNode(ProjectDetailRepository projectRepository, RootNode rootNode, bool includeExternalReferences)

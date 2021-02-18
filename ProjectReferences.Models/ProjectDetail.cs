@@ -29,6 +29,47 @@ namespace ProjectReferences.Models
 
         public string Name { get; private set; }
 
+        public void OptimizeReferences(ProjectDetailRepository projectRepository)
+        {
+            OptimizeCollection(projectRepository, ChildProjects);
+            OptimizeCollection(projectRepository, ParentProjects);
+        }
+
+        private static void OptimizeCollection(ProjectDetailRepository projectRepository, ISet<ProjectLinkObject> references)
+        {
+            var projectsToRemove = new HashSet<ProjectLinkObject>();
+            var projectsToAdd = new HashSet<ProjectLinkObject>();
+
+            foreach (var reference in references)
+            {
+                if (reference.IsOutOfSolution)
+                {
+                    string name = Path.GetFileNameWithoutExtension(reference.FullPath);
+
+                    var projects = projectRepository.GetByName(name);
+
+                    if (projects.Count == 0)
+                    {
+                        // Just leave it as is
+                    }
+                    else if (projects.Count == 1)
+                    {
+                        var projectLinkObject = new ProjectLinkObject(projects.First());
+
+                        _ = projectsToRemove.Add(reference);
+                        _ = projectsToAdd.Add(projectLinkObject);
+                    }
+                    else
+                    {
+                        throw new ArgumentException(string.Format("More than one project has the same name '{0}'", name));
+                    }
+                }
+            }
+
+            references.ExceptWith(projectsToRemove);
+            references.UnionWith(projectsToAdd);
+        }
+
         public ISet<ProjectLinkObject> ChildProjects { get; private set; }
 
         public ISet<ProjectLinkObject> ParentProjects { get; private set; }
@@ -79,9 +120,19 @@ namespace ProjectReferences.Models
             }
             else if (projectType == ProjectType.Cpp)
             {
-                FetchCppExtraInfo(nsMgr, xmlDoc);
+                if (string.IsNullOrWhiteSpace(Name))
+                {
+                    Name = GetCppProjectName(nsMgr, xmlDoc);
+                }
+
+                CppDetails = GetCppExtraInfo(nsMgr, xmlDoc);
             }
 
+            Id = GetGuid(projectGuidInSolution, nsMgr, xmlDoc);
+        }
+
+        private static Guid GetGuid(Guid projectGuidInSolution, XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        {
             var guidNode = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ProjectGuid", nsMgr);
             if (null != guidNode)
             {
@@ -90,21 +141,16 @@ namespace ProjectReferences.Models
                 {
                     throw new ArgumentException(string.Format("Guid in soludion '{0}' and in project file '{1}' does not match", projectGuidInSolution, projectGuid));
                 }
-                Id = projectGuid;
+                return projectGuid;
             }
             else
             {
-                Id = projectGuidInSolution;
+                return projectGuidInSolution;
             }
         }
 
-        private void FetchCppExtraInfo(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        private static CppProjectDetails GetCppExtraInfo(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
         {
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                Name = GetCppProjectName(nsMgr, xmlDoc);
-            }
-
             var details = new CppProjectDetails
             {
                 Type = GetCppProjectType(nsMgr, xmlDoc),
@@ -113,11 +159,10 @@ namespace ProjectReferences.Models
                 IsManaged = IsManaged(nsMgr, xmlDoc),
             };
 
-
-            CppDetails = details;
+            return details;
         }
 
-        private string GetCppProjectType(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
+        private static string GetCppProjectType(XmlNamespaceManager nsMgr, XmlDocument xmlDoc)
         {
             var configurationType = xmlDoc.SelectSingleNode(@"/msb:Project/msb:PropertyGroup/msb:ConfigurationType", nsMgr);
             if (null != configurationType)
@@ -249,59 +294,40 @@ namespace ProjectReferences.Models
             var projectReferenceObjects = new HashSet<ProjectLinkObject>();
 
             {
-                XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:AdditionalDependencies", nsMgr);
-                var libsToIgnore = new List<string> { "%(AdditionalDependencies)" };
+                var libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:AdditionalDependencies", nsMgr);
+                var libsToIgnore = new HashSet<string> { "%(AdditionalDependencies)" };
 
-                projectReferenceObjects.UnionWith(GetRawLibrariesReferencesInNode(projectRepository, libReferences, libsToIgnore));
+                projectReferenceObjects.UnionWith(GetRawLibrariesReferencesInNode(libReferences, libsToIgnore));
             }
 
             {
-                XmlNodeList libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:DelayLoadDLLs", nsMgr);
-                var libsToIgnore = new List<string> { "%(DelayLoadDLLs)" };
+                var libReferences = projectFile.SelectNodes(@"/msb:Project/msb:ItemDefinitionGroup/msb:Link/msb:DelayLoadDLLs", nsMgr);
+                var libsToIgnore = new HashSet<string> { "%(DelayLoadDLLs)" };
 
-                MergeReferencesWith(projectReferenceObjects, GetRawLibrariesReferencesInNode(projectRepository, libReferences, libsToIgnore));
+                projectReferenceObjects.UnionWith(GetRawLibrariesReferencesInNode(libReferences, libsToIgnore));
             }
+
+            OptimizeCollection(projectRepository, projectReferenceObjects);
 
             return projectReferenceObjects;
         }
 
-        private static ISet<ProjectLinkObject> GetRawLibrariesReferencesInNode(ProjectDetailRepository projectRepository, XmlNodeList references, IList<string> libsToIgnore)
+        private static ISet<ProjectLinkObject> GetRawLibrariesReferencesInNode(XmlNodeList references, ISet<string> libsToIgnore)
         {
             var projectReferenceObjects = new HashSet<ProjectLinkObject>();
 
             foreach (XmlElement reference in references)
             {
-                var libraryNames = reference.InnerText.Split(';').ToList();
+                var libraryNames = new HashSet<string>(reference.InnerText.Split(';').ToList());
 
-                foreach (var libToIgnore in libsToIgnore)
+                libraryNames.ExceptWith(libsToIgnore);
+                _ = libraryNames.Remove("");
+
+                foreach (string libraryName in libraryNames)
                 {
-                    libraryNames.Remove(libToIgnore);
-                }
+                    var projectLinkObject = ProjectLinkObject.MakeOutOfSolutionLink(libraryName);
 
-                libraryNames.Remove("");
-
-                foreach (var libraryName in libraryNames)
-                {
-                    var name = Path.GetFileNameWithoutExtension(libraryName);
-
-                    var projects = projectRepository.GetByName(name);
-
-                    if (projects.Count == 0)
-                    {
-                        var projectLinkObject = ProjectLinkObject.MakeOutOfSolutionLink(libraryName);
-
-                        projectReferenceObjects.Add(projectLinkObject);
-                    }
-                    else if (projects.Count == 1)
-                    {
-                        var projectLinkObject = new ProjectLinkObject(projects.First());
-
-                        projectReferenceObjects.Add(projectLinkObject);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("More than one project has the same name {0}", name);
-                    }
+                    _ = projectReferenceObjects.Add(projectLinkObject);
                 }
             }
 

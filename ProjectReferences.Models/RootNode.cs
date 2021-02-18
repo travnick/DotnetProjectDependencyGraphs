@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace ProjectReferences.Models
 {
@@ -16,6 +17,14 @@ namespace ProjectReferences.Models
         public int SearchDepth { get; set; }
 
         public ProjectDetailRepository ChildProjects { get; private set; }
+
+        public void OptimizeReferences()
+        {
+            foreach (var childProject in ChildProjects)
+            {
+                childProject.OptimizeReferences(ChildProjects);
+            }
+        }
     }
 
     public enum RootNodeType
