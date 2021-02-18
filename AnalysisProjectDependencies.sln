@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectReferences.Output", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YumlOutput", "YumlOutput\YumlOutput.csproj", "{9916044A-4AF4-4ECC-B8EC-B0725F1CCBA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectReferences.Console", "ProjectReferences.Console\ProjectReferences.Console.csproj", "{1648752C-0F70-426F-8AAE-BA8424E869D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectReferences.App", "ProjectReferences.Console\ProjectReferences.App.csproj", "{1648752C-0F70-426F-8AAE-BA8424E869D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectReferences.Utils", "ProjectReferences.Utils\ProjectReferences.Utils.csproj", "{BF404419-838F-4391-BD7F-532B991337CE}"
 EndProject

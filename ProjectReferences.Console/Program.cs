@@ -2,31 +2,20 @@
 using System.Configuration;
 using System.IO;
 using ProjectReference;
-using ProjectReferences.Models;
 using ProjectReferences.Shared;
 
-namespace ProjectReferences.Console
+namespace ProjectReferences.App
 {
     sealed class Program
     {
-        static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            /*
-             *
-             * Example of command line args
-             *
-             * -rootfile "D:\Work\Aerdata\StreamInteractive\Dev-2.6\Shared\Stream2.JobQueuePersistence\Stream2.JobQueuePersistence.csproj" -outputfolder "C:\temp\projectReferences" -outputeachitem true -outputtype YumlReferenceList -loglevel High
-             *
-             * -rootfile "D:\Work\Aerdata\StreamInteractive\Dev-2.6\Shared\Stream2.JobQueuePersistence\Stream2.JobQueuePersistence.csproj"
-             * -outputfolder "C:\temp\projectReferences"
-             * -outputeachitem true
-             * -outputtype YumlReferenceList
-             * -loglevel High
-             *
-             */
-
             Logger.Log("parsing args");
-            var request = new ParseCommandLineArgs().Process(GetAppSettingValues(), args);
+            var request = new CommandLineArgs().Parse(GetAppSettingValues(), args);
+            if (null == request)
+            {
+                return 0;
+            }
 
             Logger.SetupLogger(request);
 
@@ -46,6 +35,8 @@ namespace ProjectReferences.Console
 
             Logger.Log(string.Format("output creation result: {0}", outputResponse.Success));
             Logger.Log(string.Format("output creation path: {0}", outputResponse.Path));
+
+            return 0;
         }
 
         private static AnalysisRequest GetAppSettingValues()

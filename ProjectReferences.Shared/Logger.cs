@@ -70,8 +70,8 @@ namespace ProjectReferences.Shared
         Low = 1,
         High = 2,
     }
-
     public enum LogType
+
     {
         Console = 1,
         TextFile = 2,
