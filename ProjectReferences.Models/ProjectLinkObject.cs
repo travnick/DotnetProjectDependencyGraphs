@@ -42,7 +42,7 @@ namespace ProjectReferences.Models
         }
         public override int GetHashCode()
         {
-            return Id.GetHashCode() + FullPath.GetHashCode();
+            return HashCode.Combine(Id, FullPath);
         }
     }
 }

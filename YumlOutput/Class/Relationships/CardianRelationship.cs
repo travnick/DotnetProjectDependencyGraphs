@@ -23,7 +23,7 @@ namespace YumlOutput.Class.Relationships
 
         protected override int GetHash()
         {
-            return (Parent.ToString() + Child.ToString()).GetHashCode();
+            return System.HashCode.Combine(Parent.ToString(), Child.ToString());
         }
 
         protected override bool EqualsImpl<T>(T other)

@@ -6,7 +6,9 @@ namespace YumlOutput.Class.Relationships
     public sealed class AggregationRelationship : YumlRelationshipBase
     {
         public YumlModel Parent { get; }
+
         public YumlModel Child { get; }
+
         public int? AggregateCount { get; }
 
         public override ISet<string> GetDeclarations()
@@ -26,7 +28,7 @@ namespace YumlOutput.Class.Relationships
 
         protected override int GetHash()
         {
-            return (Parent.ToString() + Child.ToString()).GetHashCode();
+            return System.HashCode.Combine(Parent.ToString(), Child.ToString());
         }
 
         protected override bool EqualsImpl<T>(T other)

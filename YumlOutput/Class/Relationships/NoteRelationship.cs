@@ -20,7 +20,7 @@ namespace YumlOutput.Class.Relationships
 
         protected override int GetHash()
         {
-            return (Item.ToString() + Note.ToString()).GetHashCode();
+            return System.HashCode.Combine(Item.ToString(), Note.ToString());
         }
 
         protected override bool EqualsImpl<T>(T other)
