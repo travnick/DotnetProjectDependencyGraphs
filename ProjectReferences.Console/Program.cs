@@ -74,6 +74,8 @@ namespace ProjectReferences.App
 
                 rootNode.ChildProjects.Merge(mergeWithProject.ChildProjects);
             }
+
+            rootNode.OptimizeReferences();
         }
 
         private static AnalysisRequest GetAppSettingValues()
