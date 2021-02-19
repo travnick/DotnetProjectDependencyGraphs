@@ -85,6 +85,9 @@ namespace ProjectReferences.App
             AddOption("include-external", "Include external references",
                 option => request.IncludeExternalReferences = null != option);
 
+            AddOptional("merge-with=", "Other files to merge the root file with. Separate then with ONLY semicolon ';'",
+                n => request.MergeWith.UnionWith(n.Split(';')));
+
             AddOptional("output-folder=", "Directory path to put output in",
                 n => request.OutputFolder = n);
 

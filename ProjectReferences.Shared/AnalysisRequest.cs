@@ -34,6 +34,8 @@ namespace ProjectReferences.Shared
             }
         }
 
+        public ISet<string> MergeWith = new HashSet<string>();
+
         public int NumberOfLevelsToDig { get; set; }
 
         public IList<string> ExcludeNames { get; set; }

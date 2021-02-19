@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Xml;
 using ProjectReferences.Models;
 
 namespace ProjectReference
@@ -12,21 +12,19 @@ namespace ProjectReference
         /// </summary>
         /// <param name="fullFilePath"></param>
         /// <returns></returns>
-        public static ProjectDetail MakeProjectDetail(ProjectDetailRepository projectRepository, string fullFilePath, Guid guid, bool includeExternalReferences)
+        public ProjectDetail MakeProjectDetail(ProjectDetailRepository projectRepository, string fullFilePath, Guid guid, bool includeExternalReferences)
         {
-            if (!File.Exists(fullFilePath))
+            if (!_cachedProjects.ContainsKey(fullFilePath))
             {
-                throw new FileNotFoundException(fullFilePath);
+                _cachedProjects.Add(fullFilePath, new ProjectFile(fullFilePath));
             }
 
-            //Create an xml doc with correct namespace to analysis project file.
-            var projectFile = new XmlDocument();
-            var nsMgr = new XmlNamespaceManager(projectFile.NameTable);
+            var projectFile = _cachedProjects[fullFilePath];
 
-            nsMgr.AddNamespace("msb", "http://schemas.microsoft.com/developer/msbuild/2003");
-            projectFile.Load(fullFilePath);
-
-            return new ProjectDetail(projectRepository, fullFilePath, guid, nsMgr, projectFile, includeExternalReferences);
+            return new ProjectDetail(projectRepository, fullFilePath, guid, projectFile, includeExternalReferences);
         }
+
+        private readonly IDictionary<string, ProjectFile> _cachedProjects = new Dictionary<string, ProjectFile>();
     }
 }
+;

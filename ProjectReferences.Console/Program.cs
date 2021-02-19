@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using ProjectReference;
+using ProjectReferences.Models;
 using ProjectReferences.Shared;
 
 namespace ProjectReferences.App
@@ -25,10 +27,16 @@ namespace ProjectReferences.App
             //Directory.SetCurrentDirectory(dir);
 
             Logger.Log("Creating project reference collection for root file: " + request.RootFile);
-            var rootNode = Manager.CreateRootNode(request);
+            var rootNode = Manager.CreateRootNode(request.RootFile, request);
 
             Logger.Log("Processing rootNode to fill all project references");
-            Manager.Process(rootNode, request.IncludeExternalReferences);
+
+            var manager = new Manager();
+            manager.Process(rootNode, request.IncludeExternalReferences);
+
+            var mergeWithProjects = MakeMergeWithProjects(manager, request);
+
+            MergeWith(rootNode, mergeWithProjects);
 
             Logger.Log("Creating output for rootNode", LogLevel.High);
             var outputResponse = Manager.CreateOutput(request, rootNode);
@@ -37,6 +45,33 @@ namespace ProjectReferences.App
             Logger.Log(string.Format("output creation path: {0}", outputResponse.Path));
 
             return 0;
+        }
+
+        private static IList<Models.RootNode> MakeMergeWithProjects(Manager manager, AnalysisRequest request)
+        {
+            var mergeWithProjects = new List<Models.RootNode>();
+
+            foreach (string mergeWith in request.MergeWith)
+            {
+                Logger.Log(string.Format("Processing merge with project '{0}'", mergeWith));
+
+                var mergeWithNode = Manager.CreateRootNode(mergeWith, request);
+                manager.Process(mergeWithNode, request.IncludeExternalReferences);
+
+                mergeWithProjects.Add(mergeWithNode);
+            }
+
+            return mergeWithProjects;
+        }
+
+        private static void MergeWith(RootNode rootNode, IList<RootNode> mergeWithProjects)
+        {
+            foreach (var mergeWithProject in mergeWithProjects)
+            {
+                Logger.Log(string.Format("Merging with '{0}'", mergeWithProject.Name));
+
+                rootNode.ChildProjects.Merge(mergeWithProject.ChildProjects);
+            }
         }
 
         private static AnalysisRequest GetAppSettingValues()

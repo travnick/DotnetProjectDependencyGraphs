@@ -11,6 +11,7 @@ namespace ProjectReferences.Models
             FullPath = project.FullPath;
             Guid = project.Id;
             IsOutOfSolution = project.IsOutOfSolution;
+            IsProjectLoadable = File.Exists(FullPath);
         }
 
         public static InvestigationLink MakeOutOfSolution(ProjectLinkObject parent, string fullPath)
@@ -22,10 +23,7 @@ namespace ProjectReferences.Models
         {
         }
 
-        public bool IsProjectLoadable()
-        {
-            return File.Exists(FullPath);
-        }
+        public bool IsProjectLoadable { get; private set; }
 
         public ProjectLinkObject Parent { get; private set; }
 
