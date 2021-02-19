@@ -55,6 +55,11 @@ namespace YumlOutput.Class.Models
             return Compare(other);
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_name);
+        }
+
         private readonly string _name;
     }
 }
