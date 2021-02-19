@@ -76,6 +76,16 @@ namespace ProjectReferences.Models
             OptimizeCollection(projectRepository, ParentProjects);
         }
 
+        public bool Equals(ProjectDetail other)
+        {
+            return Id == other.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, FullPath);
+        }
+
         private static void OptimizeCollection(ProjectDetailRepository projectRepository, ISet<ProjectLinkObject> references)
         {
             var projectsToRemove = new HashSet<ProjectLinkObject>();
@@ -417,11 +427,6 @@ namespace ProjectReferences.Models
             }
 
             return null;
-        }
-
-        public bool Equals(ProjectDetail other)
-        {
-            return Id == other.Id;
         }
     }
 }
