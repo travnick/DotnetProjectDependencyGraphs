@@ -19,7 +19,7 @@ namespace ProjectReferences.Models
             }
             else
             {
-                _projectDetails.Add(project);
+                _ = _projectDetails.Add(project);
             }
         }
 
@@ -60,7 +60,7 @@ namespace ProjectReferences.Models
 
             foreach (var projectToAdd in projectsToAddToRepository)
             {
-                _projectDetails.Add(projectToAdd);
+                _ = _projectDetails.Add(projectToAdd);
 
                 AddChildrenToRepository(other, projectToAdd.ChildProjects);
             }
@@ -86,7 +86,7 @@ namespace ProjectReferences.Models
                 var project = other.GetById(childProject.Id);
                 if (null != project)
                 {
-                    _projectDetails.Add(project);
+                    _ = _projectDetails.Add(project);
 
                     AddChildrenToRepository(other, project.ChildProjects);
                 }
@@ -129,6 +129,6 @@ namespace ProjectReferences.Models
             return projectsToAddToRepository;
         }
 
-        private readonly IList<ProjectDetail> _projectDetails = new List<ProjectDetail>();
+        private readonly ISet<ProjectDetail> _projectDetails = new HashSet<ProjectDetail>();
     }
 }
