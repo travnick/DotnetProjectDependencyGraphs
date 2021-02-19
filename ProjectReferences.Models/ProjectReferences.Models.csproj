@@ -51,6 +51,7 @@
     <Compile Include="OutputResponse.cs" />
     <Compile Include="ProjectDetail.cs" />
     <Compile Include="ProjectDetailRepository.cs" />
+    <Compile Include="ProjectFile.cs" />
     <Compile Include="ProjectLinkObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RootNode.cs" />
