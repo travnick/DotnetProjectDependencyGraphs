@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
+
 using ProjectReferences.Interfaces;
 using ProjectReferences.Models;
 using ProjectReferences.Output.Yuml;
@@ -166,6 +166,7 @@ namespace ProjectReferences.Output.Html
         {
             return Path.Combine(outputFolder, Path.GetFileName(rootFile)) + ".svg";
         }
+
         private static string MakeParentOutputImageFileName(string outputFolder, string rootFile)
         {
             return Path.Combine(outputFolder, Path.GetFileName(rootFile)) + "_parents.svg";

@@ -7,10 +7,10 @@ namespace ProjectReferences.Models
     [DebuggerDisplay("{ProjectName}, {RelativePath}, {ProjectGuid}")]
     public sealed class SolutionProject
     {
-        static readonly Type s_ProjectInSolution;
-        static readonly PropertyInfo s_ProjectInSolution_ProjectName;
-        static readonly PropertyInfo s_ProjectInSolution_RelativePath;
-        static readonly PropertyInfo s_ProjectInSolution_ProjectGuid;
+        private static readonly Type s_ProjectInSolution;
+        private static readonly PropertyInfo s_ProjectInSolution_ProjectName;
+        private static readonly PropertyInfo s_ProjectInSolution_RelativePath;
+        private static readonly PropertyInfo s_ProjectInSolution_ProjectGuid;
 
         static SolutionProject()
         {

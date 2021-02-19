@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+
 using YumlOutput.Class.Relationships;
 
 namespace YumlOutput.Class

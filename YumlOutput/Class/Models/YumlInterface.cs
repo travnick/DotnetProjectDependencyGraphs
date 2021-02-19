@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace YumlOutput.Class.Models
+﻿namespace YumlOutput.Class.Models
 {
     public sealed class YumlInterface : YumlModel
     {
-        YumlInterface(string name):base(name)
+        public YumlInterface(string name) : base(name)
         {
         }
 
@@ -26,7 +24,7 @@ namespace YumlOutput.Class.Models
             }
 
             var o = other as YumlInterface;
-            return this.GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            return GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
         }
     }
 }

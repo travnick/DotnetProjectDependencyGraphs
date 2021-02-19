@@ -2,7 +2,7 @@
 {
     public sealed class YumlClass : YumlModel
     {
-        YumlClass(string name) : base(name)
+        public YumlClass(string name) : base(name)
         {
         }
 

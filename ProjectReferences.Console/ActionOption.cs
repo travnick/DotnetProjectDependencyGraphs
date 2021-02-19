@@ -1,9 +1,10 @@
 ﻿using System;
+
 using Mono.Options;
 
 namespace ProjectReferences.App
 {
-    sealed class ActionOption : Option
+    internal sealed class ActionOption : Option
     {
         public bool Called { get; private set; }
 

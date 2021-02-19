@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Mono.Options;
+
 using ProjectReferences.Shared;
 
 namespace ProjectReferences.App

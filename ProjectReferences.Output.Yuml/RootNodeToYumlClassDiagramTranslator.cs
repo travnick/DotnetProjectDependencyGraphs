@@ -1,11 +1,13 @@
-using System;
 using System.Collections.Generic;
+
 using ProjectReferences.Models;
 using ProjectReferences.Output.Yuml.Models;
 using ProjectReferences.Shared;
+
 using YumlOutput.Class;
 using YumlOutput.Class.Models;
 using YumlOutput.Class.Relationships;
+
 using static ProjectReferences.Models.ProjectDetail;
 
 namespace ProjectReferences.Output.Yuml
@@ -135,12 +137,12 @@ namespace ProjectReferences.Output.Yuml
             return relationships;
         }
 
-        static private YumlClassWithDetails MakeClass(ProjectLinkObject projectLink)
+        private static YumlClassWithDetails MakeClass(ProjectLinkObject projectLink)
         {
             return new YumlClassWithDetails(projectLink.FullPath);
         }
 
-        static private YumlClassWithDetails MakeClass(ProjectDetail projectDetail)
+        private static YumlClassWithDetails MakeClass(ProjectDetail projectDetail)
         {
             var detailModel = new YumlClassWithDetails(projectDetail.Name);
 
@@ -176,7 +178,7 @@ namespace ProjectReferences.Output.Yuml
             }
         }
 
-        static private YumlClassWithDetails MakeClass(DllReference dllReference)
+        private static YumlClassWithDetails MakeClass(DllReference dllReference)
         {
             var detailModel = new YumlClassWithDetails(dllReference.AssemblyName);
 

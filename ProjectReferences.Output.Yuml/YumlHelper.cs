@@ -5,7 +5,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+
 using ProjectReferences.Shared;
+
 using YumlOutput.Class;
 
 namespace ProjectReferences.Output.Yuml

@@ -35,7 +35,7 @@ namespace ProjectReferences.Models
 
         public ISet<DllReference> References { get; private set; }
 
-        public ProjectDetail(ProjectDetailRepository projectRepository, string fullFilePath, Guid projectGuidInSolution, ProjectFile  projectFile, bool includeExternalReferences)
+        public ProjectDetail(ProjectDetailRepository projectRepository, string fullFilePath, Guid projectGuidInSolution, ProjectFile projectFile, bool includeExternalReferences)
         {
             FullPath = fullFilePath;
             ParentProjects = new HashSet<ProjectLinkObject>();

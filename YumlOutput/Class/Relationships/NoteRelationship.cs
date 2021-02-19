@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using YumlOutput.Class.Models;
 
 namespace YumlOutput.Class.Relationships

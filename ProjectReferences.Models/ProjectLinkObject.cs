@@ -2,7 +2,7 @@
 
 namespace ProjectReferences.Models
 {
-    public class ProjectLinkObject: IEquatable<ProjectLinkObject>
+    public class ProjectLinkObject : IEquatable<ProjectLinkObject>
     {
         public ProjectLinkObject(ProjectDetail projectDetail)
         {

@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+
 using ProjectReference;
+
 using ProjectReferences.Models;
 using ProjectReferences.Shared;
 
 namespace ProjectReferences.App
 {
-    sealed class Program
+    internal sealed class Program
     {
         public static int Main(string[] args)
         {

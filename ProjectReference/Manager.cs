@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ProjectReferences.Interfaces;
+
 using ProjectReferences.Models;
 using ProjectReferences.Output;
 using ProjectReferences.Shared;

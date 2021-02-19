@@ -2,7 +2,7 @@
 {
     public sealed class YumlNote : YumlModel
     {
-        YumlNote(string name) : base(name)
+        public YumlNote(string name) : base(name)
         {
         }
 
@@ -24,7 +24,7 @@
             }
 
             var o = other as YumlNote;
-            return this.GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
+            return GetName() == o.GetName() && BackGroundColour == o.BackGroundColour ? 0 : 1;
         }
     }
 }

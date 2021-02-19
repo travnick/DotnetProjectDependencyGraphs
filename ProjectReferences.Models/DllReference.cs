@@ -1,5 +1,3 @@
-using System;
-
 namespace ProjectReferences.Models
 {
     public sealed class DllReference

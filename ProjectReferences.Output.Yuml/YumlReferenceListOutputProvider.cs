@@ -1,5 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
+
 using ProjectReferences.Interfaces;
 using ProjectReferences.Models;
 using ProjectReferences.Shared;

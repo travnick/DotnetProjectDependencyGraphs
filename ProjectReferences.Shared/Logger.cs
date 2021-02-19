@@ -5,7 +5,7 @@ namespace ProjectReferences.Shared
 {
     public sealed class Logger
     {
-        private static int _MaxloggingLevel = (int) LogLevel.Low;
+        private static int _MaxloggingLevel = (int)LogLevel.Low;
         private static LogType _logType = LogType.Console;
         private static string _folderLocation = string.Empty;
         private static string _fileLocation = "ProjectReferenceLog.log";
@@ -13,7 +13,7 @@ namespace ProjectReferences.Shared
 
         public static void Log(string message, LogLevel logLevel = LogLevel.Low)
         {
-            if ((int) logLevel <= _MaxloggingLevel)
+            if ((int)logLevel <= _MaxloggingLevel)
             {
                 switch (_logType)
                 {
@@ -34,7 +34,7 @@ namespace ProjectReferences.Shared
 
         public static void SetLogLevel(LogLevel logLevel)
         {
-            _MaxloggingLevel = (int) logLevel;
+            _MaxloggingLevel = (int)logLevel;
         }
 
         public static void SetLogType(LogType logType)
